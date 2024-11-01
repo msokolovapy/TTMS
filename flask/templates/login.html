@@ -3,68 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Page</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            flex-direction: column;
-            font-family: Arial, sans-serif;
-        }
-
-        h1 {
-            font-size: 20px;
-            text-align: center;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        label, input {
-            font-size: 20px;
-            margin: 10px;
-            text-align: center;
-        }
-
-        input {
-            padding: 5px;
-            width: 300px;
-        }
-
-        p {
-            font-size: 20px;
-            text-align: center;
-        }
-
-        .button-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 10px;
-        }
-
-        button {
-            padding: 10px 20px;
-            margin: 0 50px;
-            cursor: pointer;
-        }
-    </style>
+    <title>{% block title %}Login Page{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>Please enter your login details below:</h1>
-    <form>
-        
-        <label for="email">Your email address:</label>
-        <input type="email" id="email" name="email" required>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul class="flashes">
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <div class="container">
+        {% block content %}
+        <h1>Please enter your login details below:</h1>
+    <form action="/login" method="post">  <!-- Link to the /login route with POST method -->
+        <label for="player_email">Your email address:</label>
+        <input type="email" id="player_email" name="player_email" required>
 
         <label for="password">Your password:</label>
         <input type="password" id="password" name="password" required>
         
-        <button type="submit">Login</button>
+        <div class="button-container">
+            <button type="submit">Login</button>
+        </div>
     </form>
+        {% endblock %}
+    </div>
 </body>
 </html>

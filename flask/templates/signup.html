@@ -1,45 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign-up Page</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            flex-direction: column;
-            font-family: Arial, sans-serif;
-        }
+{% extends "login.html" %}
 
-        h1 {
-            font-size: 20px;
-            text-align: center;
-        }
+{% block title %}
+Sign-up Page
+{% endblock %}
 
-        form {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        label, input {
-            font-size: 20px;
-            margin: 10px;
-            text-align: center;
-        }
-
-        input {
-            padding: 5px;
-            width: 300px;
-        }
-    </style>
-</head>
-<body>
-    <h1>Please register your details below:</h1>
-    <form>
+{% block content %}
+     <h1>Please register your details below:</h1>
+     <form action="/signup" method="post">  <!-- Link to the /signup route with POST method -->
         <label for="nickname">Your preferred nickname:</label>
         <input type="text" id="nickname" name="nickname" required>
         
@@ -54,5 +21,4 @@
         
         <button type="submit">Register</button>
     </form>
-</body>
-</html>
+{% endblock %}
