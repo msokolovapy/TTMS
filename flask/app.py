@@ -1,18 +1,26 @@
 #app.py
+#app.py
 
 from flask import Flask, render_template, redirect, url_for, request, flash, session
-from flask_sqlalchemy import SQLAlchemy
-from flask_bcrypt import Bcrypt
-from models import User
+from extensions import db, bcrypt  # Import db and bcrypt from extensions
+from models_user import User  # Import models after initializing extensions
+from datetime import datetime
 import os
 
+
 app = Flask(__name__)
-app.secret_key = os.urandom(24)  # Use a secure random key for sessions
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.secret_key = os.urandom(24)  
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/maria/Desktop/New_folder/TTMS/instance/database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
-bcrypt = Bcrypt(app)
+# Initialize extensions with app
+db.init_app(app)
+bcrypt.init_app(app)
+
+# @app.before_first_request
+# def create_tables():
+#     db.create_all()  # This will create all tables defined in your models
+
 
 
 @app.route('/')
@@ -22,19 +30,25 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        user_email = request.form['user_email']
+        player_email = request.form['player_email']
         password = request.form['password']
 
         # Query user by username
-        user = User.query.filter_by(user_email = user_email).first()
+        user = User.query.filter_by(player_email_address = player_email).first()
+        print(f"User: {user}")
 
-        if user and bcrypt.check_password_hash(user.password, password):
-            session['user_id'] = user.id
-            session['user_role'] = user.role
+        if user:
+            print(f"Stored Hashed Password: {user.player_password}")
+            print(f"Attempted Plain Password: {password}")
+
+        if user and bcrypt.check_password_hash(user.player_password, password):
+            session['user_id'] = user.player_id
+            session['user_role'] = user.player_role
+            session['user_name'] = user.player_login_name
             flash('Login successful!', 'success')
 
             # Redirect based on role
-            if user.role == 'admin':
+            if user.player_role == 'admin':
                 return redirect(url_for('admin'))
             else:
                 return redirect(url_for('users'))
@@ -48,28 +62,33 @@ def login():
 def signup():
     #checks if user already exists in database:
     if request.method == 'POST':
-        user_name = request.form['user_name']
-        user_phone_number = request.form['user_phone_number']
-        user_email = request.form['user_email']
+        user_name = request.form['nickname']
+        user_email = request.form['email']
+        user_phone_number = request.form['phone']
         password = request.form['password']
 
         # Query user by email
-        user = User.query.filter_by(user_email=user_email).first()
+        user = User.query.filter_by(player_email_address=user_email).first()
+        # Query user to determine preliminary rank of any new player defined as number of players/3
+        new_user_rank = round(User.query.count()/3,3)
 
         if user:
             flash('User details already in database. Please login instead.', 'danger')
             return redirect(url_for('login'))
         
         new_user = User(
-            user_name=user_name,
-            User_email=user_email,
-            user_phone_number=user_phone_number,
-            password=bcrypt.generate_password_hash(password).decode('utf-8')
+            player_login_name=user_name,
+            player_email_address=user_email,
+            player_phone_number=user_phone_number,
+            player_password=bcrypt.generate_password_hash(password).decode('utf-8'),
+            player_role='user',
+            player_rank=new_user_rank
         )
 
         db.session.add(new_user)
         db.session.commit()
-        return redirect(url_for('signup_successful'))
+        return redirect(url_for('signup_success'))
+        
         
     return render_template('signup.html')
 
@@ -78,17 +97,6 @@ def signup():
 def signup_success():
     return render_template('signup_success.html')
 
-
-@app.route('/users')
-#Summary of user details including current ranking
-#displays 'Let's make a booking:' string	
-#at initiation checks ttms.db to see which booking dates are available
-#displays available booking dates as date picker and button 'Make a booking'
-#upon clicking on Make a booking button redirects to payment page
-def users():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    return render_template('user.html')
 
 @app.route('/admin')
 #displays 4 sectors with the following styling/information:
@@ -109,10 +117,73 @@ def logout():
 @app.route('/users/payment')
 def user_payment():
     #redirects to Paypal or pay in cash at the venue
+    pass
 
 @app.route('/cash_payment')
 def cash_payment():
     #change booking payment status to Paid in Full
+    pass
+
+from models_booking import Booking
+
+@app.route('/users', methods=['GET', 'POST'])
+#to add:
+# Summary of user details including current ranking
+#upon clicking on Make a booking button redirects to payment page
+
+def users():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    user_name = session.get('user_name')
+    
+    from models_booking import find_available_bookings, retrieve_all_bookings_for_user
+    all_available_bookings_period_60_days = find_available_bookings()
+    formatted_all_available_bookings_period_60_days = [
+        {
+            'original': date,
+            'formatted': datetime.strptime(date, '%Y-%m-%d').strftime('%d-%b-%Y, %A')
+        } 
+        for date in all_available_bookings_period_60_days
+    ]
+    available_user_booking = retrieve_all_bookings_for_user(user_name=user_name)
+    formatted_available_user_booking = [
+        {
+            'original': date,
+            'formatted': datetime.strptime(date, '%Y-%m-%d').strftime('%d-%b-%Y, %A')
+        } 
+        for date in available_user_booking
+    ]
+        
+    if request.method == 'POST':
+        action = request.form.get('action')
+        if action == 'new_booking':
+            selected_available_date = request.form.get('choose_available_booking_date')
+                        
+            if selected_available_date:
+                new_booking = Booking(date_time_booking_made = datetime.now(),player_login_name = user_name, 
+                                required_booking_date = selected_available_date)
+                db.session.add(new_booking)
+                db.session.commit()
+                flash(f'You are booked for {selected_available_date}. See you there!','success')
+                available_user_booking = retrieve_all_bookings_for_user(user_name=user_name) #refresh available dates for drop-down list
+            else:
+                flash('No booking made!','danger')
+        elif action == 'delete_booking':
+                selected_date_to_delete = request.form.get('delete_booking_date')
+                if selected_date_to_delete:
+                    booking_to_delete = Booking.query.filter_by(required_booking_date=selected_date_to_delete, player_login_name=user_name).first()
+                    db.session.delete(booking_to_delete)
+                    db.session.commit()
+                    flash(f"Booking on {selected_date_to_delete} deleted successfully.",'success')
+                    available_user_booking = retrieve_all_bookings_for_user(user_name=user_name) #refresh available dates for drop-down list
+                else:
+                    flash(f"No booking found for {selected_date_to_delete}.",'danger')
+    
+    return render_template('user.html', 
+                       all_available_bookings_period_60_days=formatted_all_available_bookings_period_60_days,
+                       available_user_booking = formatted_available_user_booking, user_name = user_name)
+
 
 
 if __name__ == '__main__':

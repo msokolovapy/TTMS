@@ -6,15 +6,15 @@ from datetime import datetime, timedelta
 from flask_bcrypt import Bcrypt
 
 # Add the project directory to the Python path
-sys.path.append(os.path.abspath('C:/Users/maria/Desktop/New_folder/TTMS/flask_projects/project_1'))
+# sys.path.append(os.path.abspath('C:/Users/maria/Desktop/New_folder/TTMS'))
 
 # Use the application context
 with app.app_context():
     # Clear all records from the booking table
-    db.session.query(User).delete()
+    # db.session.query(User).delete()
 
-    # Commit the changes to the database
-    db.session.commit()
+    # # Commit the changes to the database
+    # db.session.commit()
 
     bcrypt = Bcrypt()
 
