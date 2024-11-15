@@ -1,11 +1,12 @@
 #app.py
-#app.py
 
 from flask import Flask, render_template, redirect, url_for, request, flash, session
 from extensions import db, bcrypt  # Import db and bcrypt from extensions
-from models_user import User  # Import models after initializing extensions
+from models_user import User, GameDayPlayer # Import models after initializing extensions
+from models_match import Match  
 from datetime import datetime
 import os
+
 
 
 app = Flask(__name__)
@@ -99,15 +100,41 @@ def signup_success():
 
 
 @app.route('/admin')
-#displays 4 sectors with the following styling/information:
-	#'Match between' {player_1_login_name} and {player_2_login_name} and Edit button
-		#Edit button will allow for admin to change players and accept cash payments 
-	#Scores as form with {player_1_login_name} and {player_2_login_name} as a header and game 1,...,game N as rows
-	#Update Match Result button
 def admin():
     if 'user_id' not in session or session.get('user_role') != 'admin':
         return redirect(url_for('login'))
-    return render_template('admin.html')
+    from gameday import GameDay
+    admin_name = session.get('user_name')
+    gameday = GameDay()
+    four_matches_list = gameday.load_matches(user_name = admin_name)
+    return render_template('admin.html',four_matches_list = four_matches_list)
+
+@app.route('/admin/submit_match_results', methods=['GET', 'POST'])
+def submit_match_results():
+    player1 = request.form.get('player1_login_name')
+    player2 = request.form.get('player2_login_name')
+    
+    game_results = []
+    for i in range(1, 6):
+        game1_score = request.form.get(f'player1_game_{i}')
+        game2_score = request.form.get(f'player2_game_{i}')
+        if game1_score and game2_score:
+            game_results.append((game1_score, game2_score))
+    
+    match_result = str(tuple(game_results))
+
+    new_match = Match(
+        match_start_date_time = datetime.now(),
+        player_1_login_name=player1,
+        player_2_login_name=player2,
+        match_result=match_result
+    )
+
+    db.session.add(new_match)
+    db.session.commit()
+
+    flash("Match results have been saved successfully.")
+    return redirect(url_for('admin'))
 
 @app.route('/logout')
 def logout():
