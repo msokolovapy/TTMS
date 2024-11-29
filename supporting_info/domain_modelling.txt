@@ -1,0 +1,79 @@
+I think I've got a good project for us!
+
+I was at table tennis earlier and noticed the fuckery required to sort out who's playing who and managing how many players and tables.
+
+There's a great software development process called Domain Driven Design, there's a shittonne of info about this online and I have a pretty good book that I need to get to you (when we or you and Pachie catch up). Give it a look up and get the general idea of it though. I think it might work well.
+
+OK SO!
+
+Maria's Awesome and Totally Sexy Table Tennis Management System (MATSTTMS) <-- You can think of something better, bonus points if it's filthy and house elf related ;D
+
+So Paul (The dude who manages this shit) books out a school gymnasium and sets up 3 x 4 table tennis tables. He tries to get 2 to 4 players per table so they can play a few games and/or then mix it up with some doubles. Lately there's been a lot of people showing up and he might soon be facing problems with overbooking. Each player pays $18 dollars a day for a game that lasts from 7 - 9pm. Paul organises this on Mondays and Thursdays. Paul would also like an easy system to help rank players in some form of tournament for each season. At the moment players will usually hand over a $20 note and Paul will give $2 change. Some people will wire money directly to Paul's account. Paul finds it difficult to reconcile players and payments. Paul tries to match players of similar skill and will often join a game with missing players.
+
+I've kept the description short as you NEVER get all the information up front as clients never really know until they're using it. I'll operate as Paul in this case so you can ask me more questions to further describe the problem space. With Domain Driven Design (DDD from now on), how do you think you might start? What questions might you ask? 
+
+
+What do you think!?
+
+Cheers,
+Joel.
+
+Hey Joel,
+I've been thinking about MATSTTMS and doing some research on DDD (youtube and chatgpt).
+My understanding is that we need to define which problems we are trying to solve first, as apparently it is important not to model everything at once.
+So I would specify several problems (subdomains?): 
+*management of facility (rent/repairs/bills etc)
+*management of physical space (aka tables and table bookings) and players
+*management of games (match results and rankings)
+*management of payments
+
+I believe I need some additional info:
+*are there any rules/conditions that must be enforced when organizing any activity?
+	*for example, lease terms and lease end warning
+*how does Paul book the gymnasium?
+	*rent
+	*maintenance/repairs 
+	*cleaning services
+	*communication with landlord
+	*insurance payments
+*how do players participate in table tennis games and join tournaments? (via phone call, text, website?)
+*how to handle overbooking?
+*what data needs to be exchanged between the system and external parties, and how should this integration be handled?
+*what are the steps involved in reconciling players and payments, organizing tournaments, and matching players based on skill levels?
+	*table tennis ranking repos available on GitHub, but they need to be integrated into our system
+	*money wire transfer
+	*cash payments
+
+
+
+
+
+
+
+
+To ensure that Paul's lease for the gym is allowed to extend for another month, he will likely need to undertake various facility management tasks and fulfill certain obligations. Here are some tasks Paul may need to consider:
+
+1. **Payment of Rent**: Paul needs to ensure that he pays the rent for the gym space on time and in accordance with the terms of his lease agreement. This may involve coordinating with the landlord or property management company to arrange for rent payments.
+
+2. **Maintenance and Cleanliness**: Paul should maintain the gym space in good condition and ensure that it is clean and well-maintained after each use. This may involve regular cleaning, repairs, and upkeep of equipment and facilities to prevent damage and maintain a positive relationship with the landlord.
+
+3. **Compliance with Lease Terms**: Paul must comply with all terms and conditions specified in the lease agreement, including any restrictions on the use of the space, noise levels, hours of operation, and other regulations. Failure to comply with these terms could result in penalties or termination of the lease.
+
+4. **Insurance Coverage**: Paul should maintain appropriate insurance coverage for the gym space to protect against liability for accidents, injuries, or damages that may occur during table tennis games or other activities. This may include liability insurance, property insurance, and any other coverage required by the lease agreement.
+
+5. **Communication with Landlord**: Paul should maintain open and regular communication with the landlord or property manager to address any concerns, requests, or issues related to the gym space. This may involve providing updates on the use of the space, seeking approval for any changes or modifications, and addressing any complaints or feedback from neighbors or other tenants.
+
+6. **Renewal Negotiations**: As the end of the lease term approaches, Paul should initiate discussions with the landlord regarding the renewal of the lease for another month. This may involve negotiating terms such as rent adjustments, lease duration, and any other relevant provisions to ensure a smooth extension of the lease agreement.
+
+By undertaking these facility management tasks and fulfilling his obligations as a tenant, Paul can increase the likelihood of his lease being allowed to extend for another month and maintain a positive relationship with the landlord or property management company.
+
+
+
+
+
+
+
+
+
+
+

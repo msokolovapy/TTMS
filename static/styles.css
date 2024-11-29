@@ -1,0 +1,263 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+}
+
+h1 {
+    font-size: 24px;
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+label, input {
+    font-size: 18px;
+    margin: 10px;
+    text-align: center;
+}
+
+input, select {
+    padding: 10px;
+    width: 300px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+select {
+    background-color: #fff;
+    margin-bottom: 10px;
+}
+
+button {
+    padding: 10px 20px;
+    margin: 10px 0;
+    cursor: pointer;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+a {
+    display: block;
+    padding: 10px 20px;
+    margin: 60px auto;  /* Center the logout link horizontally */
+    text-decoration: none;
+    background-color: #28a745;
+    color: white;
+    border-radius: 5px;
+    text-align: center;  /* Ensure the text is centered inside the button */
+    width: fit-content;  /* Makes the button width based on its content */
+    transition: background-color 0.3s;
+}
+
+a:hover {
+    background-color: #218838;
+}
+
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.flashes {
+    list-style-type: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+}
+
+.flashes li.success {
+    color: green;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+.flashes li.danger {
+    color: red;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+/* Admin dashboard grid styling */
+.grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 20px;
+    width: 80vw;
+    height: 80vh;
+    margin: 0 auto;
+}
+
+.sector {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.edit-button {
+    margin-bottom: 10px;
+    background-color: #ffc107;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.edit-button:hover {
+    background-color: #e0a800;
+}
+
+.animation-space {
+    margin-bottom: 20px;
+    width: 300px;
+    height: 100px;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    font-size: 12px;
+    color: #777;
+}
+
+.action-button {
+    padding: 10px 15px;
+    margin: 5px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    width: 100px;
+}
+
+.action-button:hover {
+    background-color: #0056b3;
+}
+
+/* New styling for button alignment */
+.button-container {
+    display: flex; /* Flexbox to align buttons horizontally */
+    justify-content: center; /* Center the buttons together horizontally */
+    align-items: center; /* Align them on the same vertical level */
+    margin-top: 10px; /* Optional: spacing from the animation area */
+    gap: 20px; /* Add space between Start Game and End Game buttons */
+}
+
+/* Pop-up styling */
+.popup {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Dark overlay */
+    justify-content: center;
+    align-items: center;
+}
+
+.popup-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 10cm;
+    height: 10cm;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.popup-content h3 {
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+.popup-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+}
+
+.popup-content th, .popup-content td {
+    padding: 5px;
+    text-align: center;
+    border: 1px solid #ccc;
+}
+
+.popup-content input {
+    width: 40px;
+    text-align: center;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+
+.greyed-out {
+    background-color: #ccc;  /* Greyed out background */
+    pointer-events: none;    /* Disable interaction for everything inside */
+}
+
+.greyed-out .action-button,
+.greyed-out .edit-button {
+    pointer-events: auto;  /* Enable interaction for specific buttons */
+    opacity: 1;            /* Ensure buttons are fully visible */
+}

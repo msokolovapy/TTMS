@@ -1,0 +1,55 @@
+TTMS
+TO DO LIST
+
+
+
+*test how app.py is performing after introducing greying out and updating attributes functions
+
+*ensure that class GameDay has a dynamic counter that keeps track of counts of 'playing' and 'reserve' GameDayPlayer objects and 'inactive'/'active'/'played' status of Match objects
+
+
+	def get_info_from_html_form(form_entry):
+		return request.form.get(form_entry)
+
+*for creating a match manually:
+	*CreateMatchManually pop up window with 2 drop down lists for Player1 and Player2 populated from gamedayplayer_list
+	*Create match button (submit type)
+	*@app.route('/admin/create_match_manually',methods = ['POST']
+		def create_match_manually():
+			restored_gameday_obj = deserialize_gameday_obj()
+			four_matches_list = restored_gameday_obj.get_four_matches_list()
+			gameday_player_list = restored_gameday_obj.get_player_list()
+
+			player1 = request_form_info('player_1_login_name')
+			player2 = request_form_info('player_2_login_name')
+			match_to_update = request_form_info('match')
+			
+			restored_gameday_obj.update_match(match_to_update,player_1,player_2)
+			serialize_gameday_obj(restored_gameday_obj)
+			return render_template('admin.html',four_matches_list = , gameday_player_list = gameday_player_list)
+
+
+	* def update_gameday_matches_list(match_to_update, gameday_obj, player_1_login_name, player_2_login_name)
+			
+			
+*create 'Let system create a match for you' button (instead of Next)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
