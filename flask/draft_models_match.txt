@@ -1,0 +1,94 @@
+*calculate numb of wins, numb of losses
+*calculate points from wins
+*calculate average margin
+*calculate total points
+*calculate new ranking as ROUND(N-ROUND(N*(total points/average max points),3),3) where N is the number of players in the system
+*match players based on ranking:
+	*+-10% of N
+	*if odd number, remainder gets matched together
+booking_id  date_time_booking_made      player_login_name  required_booking_date
+
+Please kindly re-write below query into SQLAlchemy query:
+
+select b.player_login_name,b.required_booking_date,u.player_rank
+from booking b
+left join user u on u.player_login_name = b.player_login_name
+where b.required_booking_date =
+(select required_booking_date 
+from booking
+where required_booking_date >= '2024-10-23'
+order by required_booking_date
+limit 1);
+
+
+from sqlalchemy import func, and_, cast, Float
+from your_app import db
+from models import Booking, User
+
+def obtain_game_day_data():
+# Subquery to find the earliest booking date >= current date
+subquery = db.session.query(Booking.required_booking_date)\
+    .filter(Booking.required_booking_date >= date())\
+    .order_by(Booking.required_booking_date.asc())\
+    .limit(1)\
+    .subquery()
+
+# Main query to provide player_login_name, required_booking_date and player_rank for the nearest booking date
+game_day_data = db.session.query(
+    Booking.player_login_name, 
+    Booking.required_booking_date, 
+    cast(User.player_rank,Float)
+).outerjoin(User, User.player_login_name == Booking.player_login_name)\
+ .filter(Booking.required_booking_date == subquery)\
+ .all()
+
+return game_day_data
+
+
+def match_players():
+    booking_data = obtain_booking_data()
+    size = len(booking_data)
+    matched_players = []
+    #random shuffling of booking_data here
+    if size % 2 != 0: #odd number of players, one players randomly popped off list and matched with admin
+        lst = []
+        #random determination of number in range(size)
+        player_login_name = booking_data.pop(number)[0]
+        lst.extend([admin_name,player_login_name])
+        matched_players.extend(lst)
+    else:
+        while size > 0:
+        #include random shuffle?
+        for data in booking_data:
+        lst = []
+        player_login_name,required_booking_date,player_rank = booking_data.pop()
+        if  player_rank in range(data[2]-(data[2]*0.1) , data[2]+(data[2]*0.1):
+            lst.extend([data[0],player_login_name])
+            lst = tuple(lst)
+            matched_players.extend(lst)
+            booking_data.remove(data)
+        else: #dynamically sort booking_data based on an player_rank, and then pops the value where the third element (data[2]) is closest to the player_rank.
+             booking_data.sort(key=lambda x: abs(data[2] - player_rank)) # Sort the list based on the absolute difference of data[2] and the player_rank
+             element = booking_data.pop(0)
+             lst.extend([element[0],player_login_name])
+             lst = tuple(lst)
+             matched_players.extend(lst)
+        
+
+
+
+gameday.gameday_players = [GameDayPlayer(player_data) for player_data in gameday_data]
+gameday.gameday_matches = [Match(matched_duo,status = 'inactive') for matched_duo in matched_players]
+
+
+def load_matches():
+    random_shuffle() #class GameDay method to provide randomly shuffled gameday.gameday_matches list
+    select_N_matches(N=) # class GameDay method to provide first N matches as return gameday_matches[:N]
+    get_player_login_names() #class GameDay method to extract player_login_names from GameDayPlayer objects to display in admin.html
+    
+    
+    
+
+
+
+
