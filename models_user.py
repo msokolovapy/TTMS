@@ -20,8 +20,8 @@ class User(db.Model):
 
 class GameDayPlayer(User):
     def __init__(self,player_data):
-        player_login_name, player_rank = player_data 
-        super().__init__(player_login_name,None,None,None,None,player_rank)
+        player_login_name,player_role,player_rank = player_data 
+        super().__init__(player_login_name,None,None,None,player_role,player_rank)
         self.last_played = None
         self.player_status = 'reserve'
         self.players_played_already = []
@@ -40,6 +40,7 @@ class GameDayPlayer(User):
         return {
             'player_login_name' : self.player_login_name,
             'player_rank' : self.player_rank,
+            'player_role': self.player_role,
             'last_played': self.last_played,
             'player_status': self.player_status,
             'players_played_already': self.players_played_already
@@ -47,7 +48,7 @@ class GameDayPlayer(User):
 
     @classmethod
     def from_dict(cls, data):
-        player_data = (data['player_login_name'], data['player_rank'])
+        player_data = (data['player_login_name'], data['player_role'], data['player_rank'])
         player = cls(player_data)
         player.last_played = data.get('last_played', None) 
         player.player_status = data.get('player_status', 'reserve') 

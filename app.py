@@ -101,7 +101,7 @@ def admin():
         return redirect(url_for('login'))
     from gameday import GameDay, serialize_gameday_obj
     admin_name = session.get('user_name')
-    gameday_obj = GameDay(admin_name)
+    gameday_obj = GameDay()
     serialize_gameday_obj(session = session, gameday_obj = gameday_obj) 
     print(f'Accessing four matches list from /admin')
     gameday_obj.display_four_matches_list_details
