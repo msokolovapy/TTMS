@@ -118,7 +118,9 @@ class GameDay():
         players_found = self.find_gameday_players(player_1_login_name, player_2_login_name)
         
         if players_found: 
-            player_1, player_2 = players_found 
+            player_1, player_2 = players_found
+            player_1.players_played_already.append(player_2.player_login_name)
+            player_2.players_played_already.append(player_1.player_login_name) 
             
             for player in players_found:
                 print('Player found')
@@ -129,11 +131,11 @@ class GameDay():
                 
                 if last_played:
                     print("Attempting to edit players 'last played'")
-                    player_1.players_played_already.append(player_2.player_login_name)
-                    player_2.players_played_already.append(player_1.player_login_name)
                     setattr(player, 'last_played', last_played)
                     # logging.info(f'Player {player.player_login_name} last time played and gameday_player_list updated')
+                
                 print(player.__dict__)
+
         else:
             pass
             # logging.error(f'Player duo not found. Players attributes not updated')
@@ -141,6 +143,7 @@ class GameDay():
 
     def find_specified_match(self,match_to_find):
         matches_lst = [self.get_four_matches_list(),self.get_gameday_matches()]
+        found_matches = []
         for match_lst in matches_lst:
             if not match_lst: 
                 print(f"List is empty. Updating is not possible")
@@ -148,25 +151,30 @@ class GameDay():
             for match in match_lst:
                 if match == match_to_find:
                     print('Match found')
-                    return match
+                    found_matches.append(match)
+        if found_matches:
+            return found_matches
+        else:
+            return None
 
 
     def update_match(self,played_match,player_1_login_name, player_2_login_name):
-        match = self.find_specified_match(match_to_find=played_match)
-        if match:
+       found_matches = self.find_specified_match(match_to_find=played_match)
+       for match in found_matches:
+           if match:
             setattr(match,'player_1_login_name', player_1_login_name)
             setattr(match,'player_2_login_name', player_2_login_name)
-        return
 
     def update_match_status(self,played_match,match_status):
-        match = self.find_specified_match(match_to_find=played_match)
-        if match:
-            print('Match exists prior to updating match status')
-            print('Attempting to update match status...')
-            setattr(match,'status',match_status)
-            print(f'Match between {match.player_1_login_name} and {match.player_2_login_name}. Desired match status is "{match_status}. Match status updated to "{match.status}"')
+        found_matches = self.find_specified_match(match_to_find=played_match)
+        if found_matches:
+            for match in found_matches:
+                print('Match exists prior to updating match status')
+                print('Attempting to update match status...')
+                setattr(match,'status',match_status)
+                print(f'Match between {match.player_1_login_name} and {match.player_2_login_name}. Desired match status is "{match_status}. Match status updated to "{match.status}"')
         else:
-            print('error here')
+            print('Error: Match not found in either list')
     
     def display_four_matches_list_details(self):
         for match in self.four_matches_list:
@@ -212,29 +220,29 @@ if __name__=='__main__':
         gameday_dict = gameday.to_dict()
         gameday_obj_restored = GameDay.from_dict(gameday_dict)
 
-        gameday.display_four_matches_list_details()
+        # gameday.display_four_matches_list_details()
     
-        played_match = Match(
-        match_start_date_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        player_1_login_name='jane',
-        player_2_login_name='bill',
-        match_result={(1,1),(2,1),(1,4),(1,6),(1,6)})
+        # played_match = Match(
+        # match_start_date_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        # player_1_login_name='jane',
+        # player_2_login_name='mike',
+        # match_result={(1,1),(2,1),(1,4),(1,6),(1,6)})
 
-        gameday.update_match_status(played_match=played_match, match_status = 'played')
+        # gameday.update_match_status(played_match=played_match, match_status = 'played')
 
-        print('Match has been updated')
+        # print('Match has been updated')
 
-        gameday.display_four_matches_list_details()
+        # gameday.display_four_matches_list_details()
 
-        for player in gameday.gameday_players:
-            print(f'Player: {player.player_login_name}. Player status: {player.player_status}')
+        # for player in gameday.gameday_players:
+        #     print(f'Player: {player.player_login_name}. Player status: {player.player_status}')
 
-        gameday.update_gameday_player(player_1_login_name='mike',player_2_login_name='jane', status = 'ACTIVE', last_played=datetime.now())
+        # gameday.update_gameday_player(player_1_login_name='mike',player_2_login_name='jane', status = 'ACTIVE', last_played=datetime.now())
         
-        print('Players have been updated')
+        # print('Players have been updated')
 
-        for player in gameday.gameday_players:
-            print(f'Player: {player.player_login_name}. Player status: {player.player_status}. Last played: {player.last_played}')
+        # for player in gameday.gameday_players:
+        #     print(f'Player: {player.player_login_name}. Player status: {player.player_status}. Last played: {player.last_played}')
 
 
 
