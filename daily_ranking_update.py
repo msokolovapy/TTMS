@@ -9,19 +9,19 @@ import logging
 logging.basicConfig(filename='daily_ranking_update.log', level=logging.INFO, 
                     format='%(asctime)s %(levelname)s:%(message)s')
 
-def retrieve_match_data():
-    today_date = datetime.now().strftime('%Y-%m-%d')
+def retrieve_match_data(match_date):
+    # today_date = datetime.now().strftime('%Y-%m-%d')
     match_data_query = db.session.query(
         Match.player_1_login_name,
         Match.player_2_login_name,
         Match.match_result
-    ).filter(func.date(Match.match_start_date_time) == today_date).all()
+    ).filter(func.date(Match.match_start_date_time) == match_date).all()
     
-    logging.info(f"Retrieved match data for {today_date}")
+    logging.info(f"Retrieved match data for {match_date}")
     return match_data_query
 
-def create_match_obj_list():
-    match_data_query_result = retrieve_match_data()
+def create_match_obj_list(match_date):
+    match_data_query_result = retrieve_match_data(match_date)
     if match_data_query_result:
         match_obj_list = [
             Match(player_1_login_name=player_1_login_name, player_2_login_name=player_2_login_name, match_result=match_result)
