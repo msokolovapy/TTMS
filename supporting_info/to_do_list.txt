@@ -3,7 +3,6 @@ TO DO LIST
 
 
 
-*test how app.py is performing after introducing greying out and updating attributes functions
 
 *ensure that class GameDay has a dynamic counter that keeps track of counts of 'playing' and 'reserve' GameDayPlayer objects and 'inactive'/'active'/'played' status of Match objects
 
@@ -34,8 +33,7 @@ TO DO LIST
 			
 *create 'Let system create a match for you' button (instead of Next)
 
-
-
+* 
 
 
 

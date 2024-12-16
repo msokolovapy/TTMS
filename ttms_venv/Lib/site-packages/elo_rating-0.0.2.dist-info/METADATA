@@ -1,0 +1,38 @@
+Metadata-Version: 2.1
+Name: elo-rating
+Version: 0.0.2
+Summary: An implementation of Elo rating system for use in comparative crowdsourcing tasks
+Author-email: Hasti Narimanzadeh <hasti.nz@gmail.com>
+License: MIT
+Keywords: Elo,Crowdsourcing,Ranking
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Education
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Scientific/Engineering :: Information Analysis
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+
+# Reference implementation of Elo rating system 
+[![Python package](https://github.com/hastinarimanzadeh/elo-rating/actions/workflows/python-package.yml/badge.svg)](https://github.com/hastinarimanzadeh/elo-rating/actions/workflows/python-package.yml)
+
+## Installation
+```bash
+$ python -m pip install -U elo_rating
+```
+## Example Usage
+```python
+from elo_rating import Elo
+
+e = Elo()
+e.add_match("p1", "p2", 1.0, k=0.15)
+e.add_matches([("p1", "p2", 1.0), ("p2", "p1", 0.5)], k=0.15)
+
+e.ratings() # {"p1": 0.13363123747494593, "p2": -0.1336312374749459}
+e.items() # ['p1', 'p2']
+e.rankings() # {'p1': 0, 'p2': 1}
+
+e.ranking('p1') # 0
+e.rating('p1')  # 0.13363123747494593 
+```

@@ -1,0 +1,13 @@
+2024-12-16 16:26:13,908 INFO:Retrieved match data for 2024-12-04
+2024-12-16 16:26:13,910 ERROR:Error occurred during player ranking update: cannot unpack non-iterable method object
+2024-12-16 16:31:04,788 INFO:Retrieved match data for 2024-12-04
+2024-12-16 16:31:04,789 ERROR:Error occurred during player ranking update: cannot unpack non-iterable method object
+2024-12-16 16:41:43,275 INFO:Retrieved match data for 2024-12-04
+2024-12-16 16:41:43,278 ERROR:Error occurred during player ranking update: cannot unpack non-iterable method object
+2024-12-16 16:46:12,098 INFO:Retrieved match data for 2024-12-04
+2024-12-16 16:46:38,382 INFO:Retrieved match data for 2024-12-04
+2024-12-16 16:47:34,218 INFO:Retrieved match data for 2024-12-04
+2024-12-16 16:48:14,278 INFO:Retrieved match data for 2024-12-04
+2024-12-16 16:48:14,278 ERROR:Error occurred during player ranking update: Elo.__init__() got an unexpected keyword argument 'k'
+2024-12-16 16:49:07,677 INFO:Retrieved match data for 2024-12-04
+2024-12-16 16:49:07,677 ERROR:Error occurred during player ranking update: Elo.__init__() got an unexpected keyword argument 'k'
