@@ -102,10 +102,9 @@ def admin():
     from gameday import GameDay, serialize_gameday_obj
     admin_name = session.get('user_name')
     gameday_obj = GameDay()
-    serialize_gameday_obj(session = session, gameday_obj = gameday_obj) 
     print(f'Accessing four matches list from /admin')
     gameday_obj.display_four_matches_list_details
-    return render_template('admin.html',user_name = admin_name, four_matches_list = gameday_obj.get_four_matches_list())
+    return render_template('admin.html',user_name = admin_name, four_matches_list = gameday_obj.create_four_matches())
 
 
 
@@ -134,8 +133,7 @@ def submit_match_results():
     db.session.add(played_match)
     db.session.commit()
     
-    from gameday import deserialize_gameday_obj,serialize_gameday_obj
-    gameday_obj = deserialize_gameday_obj(session = session)
+    gameday_obj = GameDay()
     print('Accessing four matches list prior to match status update from /admin/submit_match_results')
     gameday_obj.display_four_matches_list_details()
     gameday_obj.update_match_status(played_match=played_match, match_status = 'played')
@@ -143,9 +141,16 @@ def submit_match_results():
     print('Accessing four matches list after match status update from /admin/submit_match_results')
     gameday_obj.display_four_matches_list_details()
     gameday_obj.update_gameday_player(player_1_login_name = player1, player_2_login_name = player2, status='reserve', last_played=last_played)
-    serialize_gameday_obj(session = session, gameday_obj = gameday_obj) #to serialize updated gameday_obj    
-    
-    return render_template('admin.html', user_name = admin_name, four_matches_list = gameday_obj.get_four_matches_list())
+        
+    return render_template('admin.html', user_name = admin_name, four_matches_list = gameday_obj.create_four_matches())
+
+
+@app.route('/admin/refresh', methods=['GET', 'POST'])
+def refresh():
+    admin_name = session.get('user_name')
+    gameday_obj = GameDay()
+    return render_template('admin.html',user_name = admin_name, four_matches_list = gameday_obj.create_four_matches())
+
 
 @app.route('/logout')
 def logout():
@@ -154,7 +159,7 @@ def logout():
 
 @app.route('/users/payment')
 def user_payment():
-    #redirects to Paypal or pay in cash at the venue
+    #redirects to Stripe or pay in cash at the venue. Payment status in ['paid','unpaid','deferred']
     pass
 
 @app.route('/cash_payment')

@@ -1,5 +1,7 @@
 # daily_ranking_update.py
 
+"""IMPORTANT: schedule daily running of this module to ensure timely player ranking update"""
+
 from app import app
 from datetime import datetime
 from extensions import db
@@ -11,8 +13,9 @@ import logging
 logging.basicConfig(filename='daily_ranking_update.log', level=logging.INFO, 
                     format='%(asctime)s %(levelname)s:%(message)s')
 
+
 def update_database_with_new_ranks(match):
-    winner_name, loser_name = match.determine_match_winner
+    winner_name, loser_name = match.determine_match_winner()
     new_winner_rank, new_loser_rank = match.update_player_ranking()
 
     winner = User.query.filter_by(player_login_name=winner_name).first()
@@ -36,14 +39,13 @@ def daily_ranking_update(match_obj_list):
 if __name__ == '__main__':
     with app.app_context():
         try:
-            #today_date = datetime.now().strftime('%Y-%m-%d')
-            today_date = '2024-12-04'
-            match_obj_list = retrieve_match_data(today_date)
-            for match in match_obj_list:
-                print(match.update_player_ranking())
-                
-            # daily_ranking_update(match_obj_list)
-            # logging.info("Daily player ranking update completed successfully.")
+            today_date = datetime.now().strftime('%Y-%m-%d')
+            match_obj_list = retrieve_match_data(today_date) 
+            if match_obj_list:               
+                daily_ranking_update(match_obj_list)
+                logging.info("Daily player ranking update completed successfully.")
+            else:
+                logging.info(f"No matches found for {today_date}")
         except Exception as e:
             logging.error(f"Error occurred during player ranking update: {e}")
 

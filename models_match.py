@@ -16,12 +16,13 @@ class Match(db.Model):
     player_2_login_name = db.Column(db.String, nullable = False)
     match_result = db.Column(db.String)
 
-    def __init__(self, player_1_login_name, player_2_login_name, match_start_date_time=None, match_result=None, status = None):
+    def __init__(self, player_1_login_name, player_2_login_name, match_start_date_time=None, match_result=None, status = None,html_display_status = None):
         self.match_start_date_time = match_start_date_time
         self.player_1_login_name = player_1_login_name
         self.player_2_login_name = player_2_login_name
         self.match_result = match_result
         self.status = status
+        self.html_display_status = html_display_status
 
     def __eq__(self, other):
         if isinstance(other, Match):
@@ -56,8 +57,7 @@ class Match(db.Model):
 
     def update_player_ranking(self):
         winner_rank, loser_rank = self.extract_current_player_rank()
-        elo = Elo(k=32)
-        return elo.rate(winner_rank, loser_rank)
+        return calculate_elo(winner_rank,loser_rank)
 
 
 
@@ -68,7 +68,8 @@ class Match(db.Model):
             'player_1_login_name': self.player_1_login_name,
             'player_2_login_name': self.player_2_login_name,
             'match_result': self.match_result,
-            'status': self.status
+            'status': self.status,
+            'html_display_status': self.html_display_status
         }
 
     @classmethod
@@ -78,7 +79,8 @@ class Match(db.Model):
             player_2_login_name=data['player_2_login_name'],
             match_start_date_time=data.get('match_start_date_time', None),
             match_result=data.get('match_result', None),
-            status = data.get('status',None)
+            status = data.get('status',None),
+            html_display_status = data.get('html_display_status',None)
         )
         match.match_id = data.get('match_id', None)
         return match
@@ -87,7 +89,35 @@ def retrieve_match_data(today_date):
     match_obj_list = db.session.query(
     Match).filter(func.date(Match.match_start_date_time) == today_date).all()
     logger.info(f"Retrieved match data for {today_date}")
-    return match_obj_list
+    if match_obj_list:
+        return match_obj_list
+    else:
+        logger.info(f'No match data found')
+
+def calculate_elo(winner_rating, loser_rating, k_factor=32):
+    """
+    Calculate updated Elo ratings for winner and loser.
+    
+    Parameters:
+    - winner_rating (float): Current Elo rating of the winner.
+    - loser_rating (float): Current Elo rating of the loser.
+    - k_factor (int): K-factor that controls the adjustment size. Default is 32.
+    
+    Returns:
+    - tuple: Updated ratings for the winner and loser (winner_new_rating, loser_new_rating).
+    """
+    
+    expected_winner_score = 1 / (1 + 10 ** ((loser_rating - winner_rating) / 400))
+    expected_loser_score = 1 / (1 + 10 ** ((winner_rating - loser_rating) / 400))
+    
+    actual_winner_score = 1
+    actual_loser_score = 0
+    
+    winner_new_rating = winner_rating + k_factor * (actual_winner_score - expected_winner_score)
+    loser_new_rating = loser_rating + k_factor * (actual_loser_score - expected_loser_score)
+    
+    return round(winner_new_rating, 2), round(loser_new_rating, 2)
+
 
 if __name__ == '__main__':
     match1 = Match('mike','mike')
