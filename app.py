@@ -102,6 +102,7 @@ def admin():
     from gameday import GameDay, serialize_gameday_obj
     admin_name = session.get('user_name')
     gameday_obj = GameDay()
+    serialize_gameday_obj(session = session, gameday_obj = gameday_obj)
     print(f'Accessing four matches list from /admin')
     gameday_obj.display_four_matches_list_details
     return render_template('admin.html',user_name = admin_name, four_matches_list = gameday_obj.create_four_matches())
@@ -133,7 +134,8 @@ def submit_match_results():
     db.session.add(played_match)
     db.session.commit()
     
-    gameday_obj = GameDay()
+    from gameday import GameDay, deserialize_gameday_obj, serialize_gameday_obj
+    gameday_obj = deserialize_gameday_obj(session= session)
     print('Accessing four matches list prior to match status update from /admin/submit_match_results')
     gameday_obj.display_four_matches_list_details()
     gameday_obj.update_match_status(played_match=played_match, match_status = 'played')
@@ -141,14 +143,16 @@ def submit_match_results():
     print('Accessing four matches list after match status update from /admin/submit_match_results')
     gameday_obj.display_four_matches_list_details()
     gameday_obj.update_gameday_player(player_1_login_name = player1, player_2_login_name = player2, status='reserve', last_played=last_played)
+    serialize_gameday_obj(session = session, gameday_obj=gameday_obj)
         
     return render_template('admin.html', user_name = admin_name, four_matches_list = gameday_obj.create_four_matches())
 
 
 @app.route('/admin/refresh', methods=['GET', 'POST'])
 def refresh():
+    from gameday import GameDay, serialize_gameday_obj, deserialize_gameday_obj
     admin_name = session.get('user_name')
-    gameday_obj = GameDay()
+    gameday_obj = deserialize_gameday_obj(session = session)
     return render_template('admin.html',user_name = admin_name, four_matches_list = gameday_obj.create_four_matches())
 
 

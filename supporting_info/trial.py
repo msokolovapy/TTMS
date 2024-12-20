@@ -1,29 +1,14 @@
-def calculate_elo(winner_rating, loser_rating, k_factor=32):
-    """
-    Calculate updated Elo ratings for winner and loser.
-    
-    Parameters:
-    - winner_rating (float): Current Elo rating of the winner.
-    - loser_rating (float): Current Elo rating of the loser.
-    - k_factor (int): K-factor that controls the adjustment size. Default is 32.
-    
-    Returns:
-    - tuple: Updated ratings for the winner and loser (winner_new_rating, loser_new_rating).
-    """
-    
-    # Calculate the expected score for both players
-    expected_winner_score = 1 / (1 + 10 ** ((loser_rating - winner_rating) / 400))
-    expected_loser_score = 1 / (1 + 10 ** ((winner_rating - loser_rating) / 400))
-    
-    # Since the winner actually won, the score is 1 for the winner and 0 for the loser
-    actual_winner_score = 1
-    actual_loser_score = 0
-    
-    # Update the winner's and loser's ratings using the Elo formula
-    winner_new_rating = winner_rating + k_factor * (actual_winner_score - expected_winner_score)
-    loser_new_rating = loser_rating + k_factor * (actual_loser_score - expected_loser_score)
-    
-    return round(winner_new_rating, 2), round(loser_new_rating, 2)
+import sys
+import json
+import zlib
 
 
+
+gameday_obj = {'gameday_date': '2024-12-21', 'gameday_players_data': [], 'gameday_players': [{'player_login_name': 'james', 'player_rank': 1100.0, 'player_role': 'user', 'last_played': None, 'player_status': 'reserve', 'players_played_already': []}, {'player_login_name': 
+'john', 'player_rank': 1508.76, 'player_role': 'admin', 'last_played': None, 'player_status': 'reserve', 'players_played_already': []}], 'gameday_matches': [{'match_id': None, 'match_start_date_time': None, 'player_1_login_name': 'john', 'player_2_login_name': 'james', 'match_result': None, 'status': 'active', 'html_display_status': True}]}
+
+print(sys.getsizeof(str(gameday_obj)))
+json_dict = json.dumps(gameday_obj)
+compressed_dict = zlib.compress(json_dict.encode('utf-8'))
+print(sys.getsizeof(compressed_dict))
 

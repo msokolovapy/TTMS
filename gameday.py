@@ -9,6 +9,7 @@ from datetime import datetime
 import logging
 import random
 import sys
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -153,39 +154,42 @@ class GameDay():
 
 
     def find_specified_match(self,match_to_find):
-        matches_lst = [self.get_four_matches_list(),self.get_gameday_matches()]
-        found_matches = []
-        for match_lst in matches_lst:
-            if not match_lst: 
-                print(f"List is empty. Updating is not possible")
-                continue
-            for match in match_lst:
-                if match == match_to_find:
-                    print('Match found')
-                    found_matches.append(match)
-        if found_matches:
-            return found_matches
-        else:
-            return None
+        matches_lst = self.get_gameday_matches()
+        # found_matches = []
+        for match in matches_lst:
+            # if not match_lst: 
+            #     print(f"List is empty. Updating is not possible")
+            #     continue
+            # for match in match_lst:
+            if match == match_to_find:
+                print('Match found')
+                return match
+        #             found_matches.append(match)
+        # if found_matches:
+        #     return found_matches
+        # else:
+            else:
+                print('Match not found while find_specified_match()')
+                return None
 
 
     def update_match(self,played_match,player_1_login_name, player_2_login_name):
-       found_matches = self.find_specified_match(match_to_find=played_match)
-       for match in found_matches:
-           if match:
-            setattr(match,'player_1_login_name', player_1_login_name)
-            setattr(match,'player_2_login_name', player_2_login_name)
+        found_match = self.find_specified_match(match_to_find=played_match)
+        if found_match:
+            setattr(found_match,'player_1_login_name', player_1_login_name)
+            setattr(found_match,'player_2_login_name', player_2_login_name)
+        else:
+            print('Match not found while update_match()')
 
     def update_match_status(self,played_match,match_status):
-        found_matches = self.find_specified_match(match_to_find=played_match)
-        if found_matches:
-            for match in found_matches:
+        found_match = self.find_specified_match(match_to_find=played_match)
+        if found_match:
                 print('Match exists prior to updating match status')
                 print('Attempting to update match status...')
-                setattr(match,'status',match_status)
-                print(f'Match between {match.player_1_login_name} and {match.player_2_login_name}. Desired match status is "{match_status}. Match status updated to "{match.status}"')
+                setattr(found_match,'status',match_status)
+                print(f'Match between {found_match.player_1_login_name} and {found_match.player_2_login_name}. Desired match status is "{match_status}. Match status updated to "{found_match.status}"')
         else:
-            print('Error: Match not found in either list')
+            print('Match not found while update_match_status()')
 
     def create_four_matches(self):
 
@@ -209,7 +213,7 @@ class GameDay():
     def to_dict(self):
         return {
             'gameday_date': self.gameday_date,
-            'gameday_players_data': self.gameday_players_data,
+            'gameday_players_data': json.dumps(self.gameday_players_data),
             'gameday_players': [player.to_dict() for player in self.gameday_players], 
             'gameday_matches': [match.to_dict() for match in self.gameday_matches],  
                 }
@@ -221,7 +225,7 @@ class GameDay():
         gameday_matches = [Match.from_dict(match_data) for match_data in data['gameday_matches']]
         obj = cls()
         obj.gameday_date = data['gameday_date']
-        obj.gameday_players_data = data['gameday_players_data']
+        obj.gameday_players_data = [tuple(item) for item in json.loads(data['gameday_players_data'])]
         obj.gameday_players = gameday_players
         obj.gameday_matches = gameday_matches
         return obj
@@ -236,6 +240,28 @@ def serialize_gameday_obj(session, gameday_obj):
     session['gameday_object'] = gameday_obj.to_dict()
 
 
+def get_deep_size(obj, seen=None):
+    """ Recursively calculates the total memory size of an object and its contents. """
+    if seen is None:
+        seen = set()
+    
+    obj_id = id(obj)
+    if obj_id in seen:
+        return 0  # Avoid counting the same object twice
+    
+    seen.add(obj_id)
+    
+    size = sys.getsizeof(obj)  # Get the size of the object itself
+    
+    if isinstance(obj, dict):
+        # Add size of keys and values
+        size += sum(get_deep_size(k, seen) + get_deep_size(v, seen) for k, v in obj.items())
+    elif isinstance(obj, (list, tuple, set)):
+        # Add size of each item
+        size += sum(get_deep_size(i, seen) for i in obj)
+    
+    return size
+
 
 
 if __name__=='__main__':
@@ -243,6 +269,9 @@ if __name__=='__main__':
         gameday = GameDay()
         gameday.display_four_matches_list_details()
         serialized_gameday_obj = gameday.to_dict()
+        print(sys.getsizeof(serialized_gameday_obj))
+        print(get_deep_size(serialized_gameday_obj))
+        print(serialized_gameday_obj)
         gameday_obj_restored = GameDay.from_dict(serialized_gameday_obj)
 
 
