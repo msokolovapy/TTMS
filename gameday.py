@@ -1,4 +1,8 @@
 #gameday.py
+import logging
+import random
+import sys
+import json
 from app import app
 from sqlalchemy import cast, Float
 from extensions import db
@@ -6,10 +10,7 @@ from models_booking import Booking
 from models_user import User, GameDayPlayer
 from models_match import Match
 from datetime import datetime
-import logging
-import random
-import sys
-import json
+
 
 logger = logging.getLogger(__name__)
 
@@ -106,6 +107,12 @@ class GameDay():
 
     def get_gameday_matches(self):
         return self.gameday_matches
+    
+    def get_gameday_players(self):
+        return self.gameday_players
+    
+    def get_gameday_players_names(self):
+        return [gameday_player.player_login_name for gameday_player in self.gameday_players]
    
 
     def find_gameday_players(self, player_1_login_name, player_2_login_name):
@@ -152,25 +159,45 @@ class GameDay():
             pass
             # logging.error(f'Player duo not found. Players attributes not updated')
 
+    # def find_specified_match(self,match_to_find):
+    #     duo_to_find = [match_to_find.player_1_login_name, match_to_find.player_2_login_name]
+    #     matches_lst = self.get_gameday_matches()
+    #     if matches_lst:
+    #         for match in matches_lst:
+    #             if (match.player_1_login_name in duo_to_find) and (match.player_2_login_name in duo_to_find):
+    #                 print('Match found')
+    #                 return match
+    #             else:
+    #                 print('Match not found while find_specified_match()')
+    #                 return None
+    #     else:
+    #         print(f'matches list is empty')
 
-    def find_specified_match(self,match_to_find):
-        matches_lst = self.get_gameday_matches()
-        # found_matches = []
-        for match in matches_lst:
-            # if not match_lst: 
-            #     print(f"List is empty. Updating is not possible")
-            #     continue
-            # for match in match_lst:
-            if match == match_to_find:
-                print('Match found')
-                return match
-        #             found_matches.append(match)
-        # if found_matches:
-        #     return found_matches
-        # else:
-            else:
-                print('Match not found while find_specified_match()')
-                return None
+
+    # def find_specified_match(self,match_to_find):
+    #     matches_lst = self.get_gameday_matches().copy()
+    #     if matches_lst:
+    #         for match in matches_lst:
+    #             if match == match_to_find:
+    #                 print('Match found')
+    #                 return match
+    #             else:
+    #                 print('Match not found while find_specified_match()')
+    #                 return None
+    #     else:
+    #         print(f'matches list is empty')
+
+    def find_specified_match(self, match_to_find):
+        matches_lst = self.get_gameday_matches().copy()
+        if matches_lst:
+            for match in matches_lst:
+                if match == match_to_find:
+                    print('Match found')
+                    return match
+            print('Match not found while find_specified_match()')
+            return None
+        else:
+            print('Matches list is empty')
 
 
     def update_match(self,played_match,player_1_login_name, player_2_login_name):
@@ -225,7 +252,8 @@ class GameDay():
         gameday_matches = [Match.from_dict(match_data) for match_data in data['gameday_matches']]
         obj = cls()
         obj.gameday_date = data['gameday_date']
-        obj.gameday_players_data = [tuple(item) for item in json.loads(data['gameday_players_data'])]
+        obj.gameday_players_data = json.loads(data['gameday_players_data'])
+        # obj.gameday_players_data = [tuple(item) for item in json.loads(data['gameday_players_data'])]
         obj.gameday_players = gameday_players
         obj.gameday_matches = gameday_matches
         return obj

@@ -26,8 +26,13 @@ class Match(db.Model):
 
     def __eq__(self, other):
         if isinstance(other, Match):
-            return sorted([self.player_1_login_name, self.player_2_login_name]) == sorted([other.player_1_login_name, other.player_2_login_name])
-        return False
+            try:
+                return sorted([self.player_1_login_name, self.player_2_login_name]) == sorted([other.player_1_login_name, other.player_2_login_name])
+            except Exception as e:
+                print(f'Exception while trying to match found == match is {e}')
+        else:
+            print(f'match object is not an instance of Match class')
+            return False
 
 
 
