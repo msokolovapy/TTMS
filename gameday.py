@@ -117,18 +117,12 @@ class GameDay():
 
     def find_gameday_players(self, player_1_login_name, player_2_login_name):
         lst = []
-        print(player_1_login_name)
-        print(player_2_login_name)
-    
         for gameday_player in self.gameday_players:
             if gameday_player and (gameday_player.player_login_name in (player_1_login_name, player_2_login_name)):
                 lst.append(gameday_player)
-                print(gameday_player.__dict__)
-    
         if len(lst) < 2:
             pass
             # logging.error('One or both gameday players not found')
-        print(lst)
         return tuple(lst)
 
 

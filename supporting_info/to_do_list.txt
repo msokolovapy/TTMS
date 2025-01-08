@@ -7,24 +7,24 @@ TO DO LIST
 	*Create match button (submit type)
 	*@app.route('/admin/create_match_manually',methods = ['GET','POST']
 		def create_match_manually():
-                        admin_name = session.get['user_name']
-			restored_gameday_obj = deserialize_gameday_obj(session=session)
-                        gameday_matches_list = restored_gameday_obj.get_gameday_matches()
-			gameday_player_list = restored_gameday_obj.get_gameday_players()
+			            restored_gameday_obj = deserialize_gameday_obj(session=session)
+                        gameday_players_list = restored_gameday_obj.get_gameday_players()
+                        serialised_players_list = [player.to_dict() for player in gameday_players_list]
+                        sorted_serialised_players_list = sorted(serialised_players_list, key = 
+                                                lambda x: x['last_played'] if x['last_played'] is not None 
+                                                else datetime(1,1,1))
+                        drop_down_list = create_drop_down_list(sorted_serialised_players_list)
+			           
                         
                         player_1_original_login_name = request_form_info('player_1_original_login_name')
                         player_2_original_login_name = request_form_info('player_2_original_login_name')
-			player_1_updated_login_name = request_form_info('player_1_updated_login_name')
-			player_2_updated_login_name = request_form_info('player_2_updated_login_name')
-                        player_duo = [player_1_original_login_name,player_2_original_login_name]
 
-                        for match in gameday_matches_list:
-                            if match:
-                                if match.player_1_login_name and match.player_2_login_name in player_duo:
-                                    match.player_1_login_name,match.player_2_login_name = player_1_updated_login_name, player_2_updated_login_name
-                            else:
-                                print(f'No match found when attempting to manually create match.')
-                         
+			            player_1_updated_login_name = request_form_info('player_1_updated_login_name')
+			            player_2_updated_login_name = request_form_info('player_2_updated_login_name')
+
+                        match_to_update = Match(player_1_original_login_name,player_2_original_login_name)
+                        restored_gameday_obj.update_match(match_to_update,player_1_updated_login_name, player_2_updated_login_name):
+
                         for player in gameday_players_list:
                             if player:
                                 for player_name in player_duo:
@@ -33,8 +33,8 @@ TO DO LIST
                             else:
                                 print(f'No player found when attempting to manually create match and update player status')
                         
-			serialize_gameday_obj(restored_gameday_obj)
-			return render_template('admin.html',four_matches_list = restored_gameday_obj.create_four_matches, user_name = admin_name,gameday_players = gameday_obj.get_gameday_players_names())
+			            serialize_gameday_obj(restored_gameday_obj)
+			            return render_template('admin.html',four_matches_list = restored_gameday_obj.create_four_matches, user_name = admin_name, drop_down_list = drop_down_list)
 	
 * New Game button: action linked to admin/refresh route
 

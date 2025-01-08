@@ -32,11 +32,6 @@ def login():
 
         # Query user by username
         user = User.query.filter_by(player_email_address = player_email).first()
-        print(f"User: {user}")
-
-        if user:
-            print(f"Stored Hashed Password: {user.player_password}")
-            print(f"Attempted Plain Password: {password}")
 
         if user and bcrypt.check_password_hash(user.player_password, password):
             session['user_id'] = user.player_id
