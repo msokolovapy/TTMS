@@ -9,20 +9,25 @@ Admin Dashboard
 <div class="grid-container">
     {% for match in four_matches_list %}
     <div class="sector {% if match.status == 'played' %}greyed-out{% endif %}" id="sector-{{ match.player_1_login_name }}-{{ match.player_2_login_name }}">
-        <h2>Match between {{ match.player_1_login_name }} and {{ match.player_2_login_name }}</h2>
-        <button class="edit-button">Edit</button>
+        <h2>Match between {{ match.player_1_login_name }} and {{ match.player_2_login_name }}</h2> 
+        <form action="{{ url_for('create_match_manually') }}" method="POST">
+            <input type="hidden" name="player_1_original_login_name" value="{{ match.player_1_login_name }}">
+            <input type="hidden" name="player_2_original_login_name" value="{{ match.player_2_login_name }}">
+            <button type="submit"name="edit_button" value="manually_edit_players" class="edit-button">Edit</button>
+        </form>
         <div class="animation-space">[Animation Placeholder]</div>
         {% if match.status != 'played' %}
-            <button class="action-button" onclick="openPopup('{{ match.player_1_login_name }}', '{{ match.player_2_login_name }}')">Enter results</button>
+            <button class="action-button" onclick="openResultPopup('{{ match.player_1_login_name }}', '{{ match.player_2_login_name }}')">Enter results</button>
         {% endif %}
         <button class="action-button">Next Game</button>
     </div>
     {% endfor %}
 </div>
 
+
 <div id="resultPopup" class="popup">
     <div class="popup-content">
-        <span class="close-button" onclick="closePopup()">&times;</span>
+        <span class="close-button" onclick="closeResultPopup()">&times;</span>
         <h3>Match between <span id="player1Name"></span> and <span id="player2Name"></span></h3>
         <form id="matchResultsForm" method="POST" action="{{ url_for('submit_match_results') }}">
             <input type="hidden" name="player1_login_name" id="player1Hidden">
@@ -51,10 +56,32 @@ Admin Dashboard
     </div>
 </div>
 
+<!--
+<div id="editPopup" class="popup">
+    <div class="popup-content">
+        <span class="close-button" onclick="closeEditPopup()">&times;</span>
+        <h3>Edit match between <span id="editPlayer1Name"></span> and <span id="editPlayer2Name"></span></h3>
+        <form id="matchEditForm" method="POST" action="{{ url_for('create_match_manually') }}">
+            <select id="update_player_1_login_name" name="player_1_updated_login_name">
+                {% for player_info in drop_down_list %}
+                    <option value="{{ player_info['original'] }}">{{ player_info['formatted'] | escape }}</option>
+                {% endfor %}
+             </select>
+             <select id="update_player_2_login_name" name="player_2_updated_login_name">
+                {% for player_info in drop_down_list %}
+                    <option value="{{ player_info['original'] }}">{{ player_info['formatted'] | escape }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="action-button">Edit</button>
+        </form>
+    </div>
+</div>
+-->
+
 <a href="{{ url_for('logout') }}">Logout</a>
 
 <script>
-    function openPopup(player1, player2) {
+    function openResultPopup(player1, player2) {
         document.getElementById("player1Name").textContent = player1;
         document.getElementById("player2Name").textContent = player2;
         document.getElementById("player1Header").textContent = player1;
@@ -64,9 +91,46 @@ Admin Dashboard
         document.getElementById("resultPopup").style.display = "block";
     }
 
-    function closePopup() {
+    function closeResultPopup() {
         document.getElementById("resultPopup").style.display = "none";
     }
 </script>
+ 
+<!--
+<script>
+    function openEditPopup(player1, player2, dropDownList) {
+        document.getElementById("editPlayer1Name").textContent = player1;
+        document.getElementById("editPlayer2Name").textContent = player2;
+
+        // Directly use the dropDownList (already in JSON format)
+        const player1Select = document.getElementById("update_player_1_login_name");
+        const player2Select = document.getElementById("update_player_2_login_name");
+
+        // Clear existing options
+        player1Select.innerHTML = "";
+        player2Select.innerHTML = "";
+
+        // Populate dropdowns with new options from dropDownList
+        dropDownList.forEach(player => {
+            const option1 = document.createElement("option");
+            option1.value = player.original;
+            option1.text = player.formatted;
+
+            const option2 = document.createElement("option");
+            option2.value = player.original;
+            option2.text = player.formatted;
+
+            player1Select.appendChild(option1);
+            player2Select.appendChild(option2);
+        });
+
+        document.getElementById("editPopup").style.display = "block";
+    }
+
+    function closeEditPopup() {
+        document.getElementById("editPopup").style.display = "none";
+    }
+</script>
+-->
 
 {% endblock %}

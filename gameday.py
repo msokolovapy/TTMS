@@ -111,6 +111,7 @@ class GameDay():
     def get_gameday_players(self):
         return self.gameday_players
     
+    
     def get_gameday_players_names(self):
         return [gameday_player.player_login_name for gameday_player in self.gameday_players]
    
@@ -220,10 +221,6 @@ class GameDay():
         four_matches_list = [match_obj for match_obj in self.gameday_matches if match_obj.html_display_status]
         return four_matches_list
     
-    def display_four_matches_list_details(self):
-        for match in self.create_four_matches():
-            print(f'Four matches list details for match between {match.player_1_login_name} and {match.player_2_login_name}')
-            print(f'Match status is "{match.status}". HTML display status is "{match.html_display_status}"')
 
     def update_gameday_players_list(self, gameday_players_lst):
         if gameday_players_lst:
@@ -283,6 +280,18 @@ def get_deep_size(obj, seen=None):
         size += sum(get_deep_size(i, seen) for i in obj)
     
     return size
+
+def create_drop_down_list(sorted_serialised_players_list):
+    simple_player_data_list = [{'original' : player_dict['player_login_name'],
+                                'formatted' : f'{player_dict['player_login_name']} ({player_dict['player_rank']})'} 
+                                for player_dict in sorted_serialised_players_list]
+    return tuple(simple_player_data_list)
+
+def display_gameday_matches(matches_list):
+    for index,match in enumerate(matches_list):
+        print("{:<10} {:<20} {:<20} {:<10} {:<10}".format(f'Match {index + 1}',match.player_1_login_name, \
+              match.player_2_login_name,match.status,\
+              match.html_display_status))
 
 
 

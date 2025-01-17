@@ -1,0 +1,26 @@
+{% extends "login.html" %}
+
+{% block title %}
+Create match manually
+{% endblock %}
+
+{% block content %}
+    <form action="/admin/create_match_manually" method="POST">
+        <input type="hidden" name="player_1_original_login_name" value = "{{ request.form.get('player_1_original_login_name') }}">
+        <input type="hidden" name="player_2_original_login_name" value = "{{ request.form.get('player_2_original_login_name') }}">
+        <label for="update_player_1_login_name">Choose first player:</label>
+        <select id="update_player_1_login_name" name="player_1_updated_login_name">
+            {% for player_info in drop_down_list %}
+                <option value="{{ player_info['original'] }}">{{ player_info['formatted']}}</option>
+            {% endfor %}
+         </select>
+         <label for="update_player_1_login_name">Choose second player:</label>
+         <select id="update_player_2_login_name" name="player_2_updated_login_name">
+            {% for player_info in drop_down_list %}
+                <option value="{{ player_info['original'] }}">{{ player_info['formatted']}}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" name="edit_button" value = "submit_updated_players" class="action-button">Submit</button>
+    </form>
+
+{% endblock %}

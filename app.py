@@ -1,6 +1,6 @@
 #app.py
-
-from flask import Flask, render_template, redirect, url_for, request, flash, session
+import json
+from flask import Flask, render_template, redirect, url_for, request, flash, session,jsonify
 from extensions import db, bcrypt  # Import db and bcrypt from extensions
 from models_user import User, GameDayPlayer # Import models after initializing extensions
 from models_match import Match  
@@ -29,8 +29,6 @@ def login():
     if request.method == 'POST':
         player_email = request.form['player_email']
         password = request.form['password']
-
-        # Query user by username
         user = User.query.filter_by(player_email_address = player_email).first()
 
         if user and bcrypt.check_password_hash(user.player_password, password):
@@ -39,7 +37,6 @@ def login():
             session['user_name'] = user.player_login_name
             flash('Login successful!', 'success')
 
-            # Redirect based on role
             if user.player_role == 'admin':
                 return redirect(url_for('admin'))
             else:
@@ -98,8 +95,8 @@ def admin():
     admin_name = session.get('user_name')
     gameday_obj = GameDay()
     serialize_gameday_obj(session = session, gameday_obj = gameday_obj)
+    
     return render_template('admin.html',user_name = admin_name, four_matches_list = gameday_obj.create_four_matches())
-
 
 
 @app.route('/admin/submit_match_results', methods=['GET', 'POST'])
@@ -127,27 +124,56 @@ def submit_match_results():
     db.session.add(played_match)
     db.session.commit()
 
-    print(f'Match played between {played_match.player_1_login_name} and {played_match.player_2_login_name}')
     
-    from gameday import GameDay, deserialize_gameday_obj, serialize_gameday_obj
+    from gameday import deserialize_gameday_obj, serialize_gameday_obj,create_drop_down_list
     gameday_obj = deserialize_gameday_obj(session= session)
-    print(f'gameday object matches stats prior to match status update:')
-    for match in gameday_obj.get_gameday_matches():
-        print(f'match between {match.player_1_login_name.upper()} and {match.player_2_login_name.upper()}')
-        print(f'match stats are: "{match.match_start_date_time}","{match.match_result}","{match.status}","{match.html_display_status}"')
-
     gameday_obj.update_match_status(played_match=played_match, match_status = 'played')
     gameday_obj.update_gameday_player(player_1_login_name = player1, player_2_login_name = player2, status='reserve', last_played=last_played)
-    
-    print(f'gameday object matches stats after the match status update:')
-    for match in gameday_obj.get_gameday_matches():
-        print(f'match between {match.player_1_login_name.upper()} and {match.player_2_login_name.upper()}')
-        print(f'match stats are: "{match.match_start_date_time}","{match.match_result}","{match.status}","{match.html_display_status}"')
-   
     serialize_gameday_obj(session = session, gameday_obj=gameday_obj)
         
     return render_template('admin.html', user_name = admin_name, four_matches_list = gameday_obj.create_four_matches())
 
+@app.route('/admin/create_match_manually',methods = ['GET','POST'])
+def create_match_manually():
+    from gameday import deserialize_gameday_obj,serialize_gameday_obj,create_drop_down_list,display_gameday_matches
+    restored_gameday_obj = deserialize_gameday_obj(session=session)
+    admin_name = session['user_name']
+    print('Gameday matches:')
+    display_gameday_matches(restored_gameday_obj.gameday_matches)
+    print('Four matches list:')
+    display_gameday_matches(restored_gameday_obj.create_four_matches())
+    clicked_button = request.form.get('edit_button')
+    
+    if clicked_button == 'manually_edit_players':
+        gameday_players_list = restored_gameday_obj.get_gameday_players()
+        serialised_players_list = [player.to_dict() for player in gameday_players_list]
+        sorted_serialised_players_list = sorted(serialised_players_list, key = 
+                                lambda x: x['last_played'] if x['last_played'] is not None 
+                                else datetime(1,1,1))
+        drop_down_list = create_drop_down_list(sorted_serialised_players_list)
+        return render_template('admin_create_match_manually.html', \
+                            drop_down_list = drop_down_list)
+
+    elif clicked_button == 'submit_updated_players':
+        player_1_original_login_name = request.form.get('player_1_original_login_name')
+        player_2_original_login_name = request.form.get('player_2_original_login_name')
+        player_1_updated_login_name = request.form.get('player_1_updated_login_name')
+        player_2_updated_login_name = request.form.get('player_2_updated_login_name')
+        print(f'original player names are: {player_1_original_login_name} and {player_2_original_login_name}')
+        print(f'updated player names are: {player_1_updated_login_name} and {player_2_updated_login_name}')
+
+        match_to_update = Match(player_1_original_login_name,player_2_original_login_name)
+        restored_gameday_obj.update_match(match_to_update,player_1_updated_login_name, player_2_updated_login_name)
+        print(f'match between {player_1_original_login_name} and {player_2_original_login_name} updated!')
+        print('Gameday matches:')
+        display_gameday_matches(restored_gameday_obj.gameday_matches)
+        print('Four matche list:')
+        display_gameday_matches(restored_gameday_obj.create_four_matches())
+    
+        serialize_gameday_obj(session = session, gameday_obj=restored_gameday_obj)
+        return redirect(url_for('admin', user_name = admin_name, \
+                                four_matches_list = restored_gameday_obj.create_four_matches()))
+                    
 
 @app.route('/admin/refresh', methods=['GET', 'POST'])
 def refresh():
