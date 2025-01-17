@@ -1,4 +1,5 @@
 from extensions import db
+from datetime import datetime
 
 
 class User(db.Model):
@@ -38,10 +39,10 @@ class GameDayPlayer(User):
     
     def to_dict(self):
         return {
-            'player_login_name' : self.player_login_name,
-            'player_rank' : self.player_rank,
+            'player_login_name': self.player_login_name,
+            'player_rank': self.player_rank,
             'player_role': self.player_role,
-            'last_played': self.last_played,
+            'last_played': self.last_played if self.last_played else None,
             'player_status': self.player_status,
             'players_played_already': self.players_played_already
         }
@@ -49,11 +50,14 @@ class GameDayPlayer(User):
     @classmethod
     def from_dict(cls, data):
         player_data = (data['player_login_name'], data['player_role'], data['player_rank'])
-        player = cls(player_data)
-        player.last_played = data.get('last_played', None) 
+        player = cls(player_data) 
+        player.last_played = datetime.strptime(data.get('last_played'), '%Y-%m-%d %H:%M:%S') if data.get('last_played') else None
         player.player_status = data.get('player_status', 'reserve') 
-        player.players_played_already = data.get('players_played_already', [])  
+        player.players_played_already = data.get('players_played_already', []) 
+    
         return player
+
+
 
 if __name__ == '__main__':
     pass
