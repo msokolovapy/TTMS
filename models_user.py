@@ -50,8 +50,9 @@ class GameDayPlayer(User):
     @classmethod
     def from_dict(cls, data):
         player_data = (data['player_login_name'], data['player_role'], data['player_rank'])
-        player = cls(player_data) 
-        player.last_played = datetime.strptime(data.get('last_played'), '%Y-%m-%d %H:%M:%S') if data.get('last_played') else None
+        player = cls(player_data)
+        player.last_played = data.get('last_played')
+        # player.last_played = datetime.strptime(data.get('last_played'), '%Y-%m-%d %H:%M:%S') if data.get('last_played') else None
         player.player_status = data.get('player_status', 'reserve') 
         player.players_played_already = data.get('players_played_already', []) 
     

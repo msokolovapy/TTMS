@@ -103,7 +103,6 @@ def submit_match_results():
     player1 = request.form.get('player1_login_name')
     player2 = request.form.get('player2_login_name')
     last_played = match_start_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    admin_name = session.get('user_name')
     
     game_results = []
     for i in range(1, 6):
@@ -124,28 +123,24 @@ def submit_match_results():
     db.session.commit()
 
     
-    from gameday import deserialize_gameday_obj, serialize_gameday_obj,create_drop_down_list
+    from gameday import deserialize_gameday_obj, serialize_gameday_obj
     gameday_obj = deserialize_gameday_obj(session= session)
     gameday_obj.update_match_status(played_match=played_match, match_status = 'played')
     gameday_obj.update_gameday_player(player_1_login_name = player1, player_2_login_name = player2, status='reserve', last_played=last_played)
     serialize_gameday_obj(session = session, gameday_obj=gameday_obj)
-        
-    return render_template('admin.html', user_name = admin_name, four_matches_list = gameday_obj.create_four_matches())
+
+    return redirect(url_for('admin'))   
 
 @app.route('/admin/create_match_manually',methods = ['GET','POST'])
 def create_match_manually():
-    from gameday import deserialize_gameday_obj,serialize_gameday_obj,create_drop_down_list,display_gameday_matches
+    from gameday import deserialize_gameday_obj,serialize_gameday_obj,create_drop_down_list
     restored_gameday_obj = deserialize_gameday_obj(session=session)
-    admin_name = session['user_name']
     clicked_button = request.form.get('edit_button')
     
     if clicked_button == 'manually_edit_players':
-        gameday_players_list = restored_gameday_obj.get_gameday_players()
-        serialised_players_list = [player.to_dict() for player in gameday_players_list]
-        print(serialised_players_list)
-        sorted_serialised_players_list = sorted(serialised_players_list, key = 
-                                lambda x: x['last_played'] if x['last_played'] else datetime(1,1,1))
-        drop_down_list = create_drop_down_list(sorted_serialised_players_list)
+        sorted_serialized_players_list = restored_gameday_obj.sort_gameday_players()
+        drop_down_list = create_drop_down_list(sorted_serialized_players_list)
+
         return render_template('admin_create_match_manually.html', \
                             drop_down_list = drop_down_list)
 
@@ -158,9 +153,10 @@ def create_match_manually():
         match_to_update = Match(player_1_original_login_name,player_2_original_login_name)
         restored_gameday_obj.update_match(match_to_update,player_1_updated_login_name, player_2_updated_login_name)
         serialize_gameday_obj(session = session, gameday_obj=restored_gameday_obj)
+        gameday_data = session.get('gameday_object')
+        print(f'Serialized gameday object after clicked_button == submit_updated_players: {gameday_data}')
 
-        return redirect(url_for('admin', user_name = admin_name, \
-                                four_matches_list = restored_gameday_obj.create_four_matches()))
+        return redirect(url_for('admin'))
                     
 
 @app.route('/admin/refresh', methods=['GET', 'POST'])

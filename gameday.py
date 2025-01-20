@@ -154,6 +154,16 @@ class GameDay():
             pass
             # logging.error(f'Player duo not found. Players attributes not updated')
 
+
+    def sort_gameday_players(self):
+        serialised_players_list = [player.to_dict() for player in self.get_gameday_players()]
+        for player_dict in serialised_players_list:
+            player_dict['last_played'] = datetime.strptime(player_dict['last_played'],'%Y-%m-%d %H:%M:%S') \
+                                                        if player_dict['last_played'] else None
+        sorted_serialised_players_list = sorted(serialised_players_list, key = lambda x: x['last_played'] if x['last_played'] else datetime(1,1,1))
+        
+        return sorted_serialised_players_list
+
     # def find_specified_match(self,match_to_find):
     #     duo_to_find = [match_to_find.player_1_login_name, match_to_find.player_2_login_name]
     #     matches_lst = self.get_gameday_matches()
