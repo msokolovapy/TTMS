@@ -110,6 +110,15 @@ a:hover {
     border-radius: 5px;
 }
 
+.flashes li.info {
+    color: rgb(0, 13, 255);
+    background-color: #d7eff8;
+    border: 1px solid #c6caf5;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
 /* Admin dashboard grid styling */
 .grid-container {
     display: grid;

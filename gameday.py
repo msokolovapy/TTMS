@@ -164,64 +164,97 @@ class GameDay():
         
         return sorted_serialised_players_list
 
-    # def find_specified_match(self,match_to_find):
-    #     duo_to_find = [match_to_find.player_1_login_name, match_to_find.player_2_login_name]
-    #     matches_lst = self.get_gameday_matches()
-    #     if matches_lst:
-    #         for match in matches_lst:
-    #             if (match.player_1_login_name in duo_to_find) and (match.player_2_login_name in duo_to_find):
-    #                 print('Match found')
-    #                 return match
-    #             else:
-    #                 print('Match not found while find_specified_match()')
-    #                 return None
-    #     else:
-    #         print(f'matches list is empty')
+    def find_specified_match(self, match_to_find=None,
+                             match_status=None, 
+                             match_html_display_status=None):
+            matches_list = self.get_gameday_matches()
+
+            if not matches_list:
+                raise ValueError('Match list is empty')
+            
+            #finds specific match:
+            if match_to_find:
+                for match in matches_list:
+                    if match == match_to_find:
+                        return match
+                return None
+            
+            #finds any match that satisfies any of below criteria:
+            if match_status and match_html_display_status:
+                for match in matches_list:
+                    if match.status == match_status and match.html_display_status == match_html_display_status:
+                        return match
+                return False
+
+            if match_status:
+                for match in matches_list:
+                    if match.status == match_status:
+                        return match
+                return False  
+
+            if match_html_display_status:
+                for match in matches_list:
+                    if match.html_display_status == match_html_display_status:
+                        return match
+                return False 
+
+            return None
 
 
-    # def find_specified_match(self,match_to_find):
+
+    # def find_specified_match(self, match_to_find):
     #     matches_lst = self.get_gameday_matches().copy()
     #     if matches_lst:
     #         for match in matches_lst:
     #             if match == match_to_find:
     #                 print('Match found')
     #                 return match
-    #             else:
-    #                 print('Match not found while find_specified_match()')
-    #                 return None
+    #         print('Match not found while find_specified_match()')
+    #         return None
     #     else:
-    #         print(f'matches list is empty')
+    #         print('Matches list is empty')
 
-    def find_specified_match(self, match_to_find):
-        matches_lst = self.get_gameday_matches().copy()
-        if matches_lst:
-            for match in matches_lst:
-                if match == match_to_find:
-                    print('Match found')
-                    return match
-            print('Match not found while find_specified_match()')
-            return None
-        else:
-            print('Matches list is empty')
+    def update_match(self, match_to_update, player_1_login_name=None, 
+                          player_2_login_name=None, match_status=None, 
+                          match_html_display_status=None):
+        found_match = self.find_specified_match(match_to_find=match_to_update)
+        
+        if not found_match:
+            raise ValueError('Match not found while update_match()')
 
+        if player_1_login_name and player_2_login_name:
+            setattr(found_match, 'player_1_login_name', player_1_login_name)
+            setattr(found_match, 'player_2_login_name', player_2_login_name)
 
-    def update_match(self,played_match,player_1_login_name, player_2_login_name):
-        found_match = self.find_specified_match(match_to_find=played_match)
-        if found_match:
-            setattr(found_match,'player_1_login_name', player_1_login_name)
-            setattr(found_match,'player_2_login_name', player_2_login_name)
-        else:
-            print('Match not found while update_match()')
+        if match_status and match_html_display_status is not None:
+            setattr(found_match, 'status', match_status)
+            setattr(found_match, 'html_display_status', match_html_display_status)
+            
+        if match_status:
+            setattr(found_match, 'status', match_status)
 
-    def update_match_status(self,played_match,match_status):
-        found_match = self.find_specified_match(match_to_find=played_match)
-        if found_match:
-                print('Match exists prior to updating match status')
-                print('Attempting to update match status...')
-                setattr(found_match,'status',match_status)
-                print(f'Match between {found_match.player_1_login_name} and {found_match.player_2_login_name}. Desired match status is "{match_status}. Match status updated to "{found_match.status}"')
-        else:
-            print('Match not found while update_match_status()')
+        if match_html_display_status is not None:
+            setattr(found_match, 'html_display_status', match_html_display_status)
+
+        return None
+
+    # def update_match(self,played_match,player_1_login_name, player_2_login_name):
+    #     found_match = self.find_specified_match(match_to_find=played_match)
+    #     if found_match:
+    #         setattr(found_match,'player_1_login_name', player_1_login_name)
+    #         setattr(found_match,'player_2_login_name', player_2_login_name)
+    #     else:
+    #         print('Match not found while update_match()')
+
+    # def update_match_status(self,played_match,match_status):
+    #     found_match = self.find_specified_match(match_to_find=played_match)
+    #     if found_match:
+    #             print('Match exists prior to updating match status')
+    #             print('Attempting to update match status...')
+    #             setattr(found_match,'status',match_status)
+    #             print(f'Match between {found_match.player_1_login_name} and {found_match.player_2_login_name}. Desired match status is "{match_status}. Match status updated to "{found_match.status}"')
+    #     else:
+    #         print('Match not found while update_match_status()')
 
     def create_four_matches(self):
 

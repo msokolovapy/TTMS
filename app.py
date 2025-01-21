@@ -125,11 +125,11 @@ def submit_match_results():
     
     from gameday import deserialize_gameday_obj, serialize_gameday_obj
     gameday_obj = deserialize_gameday_obj(session= session)
-    gameday_obj.update_match_status(played_match=played_match, match_status = 'played')
+    gameday_obj.update_match(match_to_update=played_match, match_status = 'played')
     gameday_obj.update_gameday_player(player_1_login_name = player1, player_2_login_name = player2, status='reserve', last_played=last_played)
     serialize_gameday_obj(session = session, gameday_obj=gameday_obj)
 
-    return redirect(url_for('admin'))   
+    return redirect(url_for('admin'))
 
 @app.route('/admin/create_match_manually',methods = ['GET','POST'])
 def create_match_manually():
@@ -151,20 +151,40 @@ def create_match_manually():
         player_2_updated_login_name = request.form.get('player_2_updated_login_name')
 
         match_to_update = Match(player_1_original_login_name,player_2_original_login_name)
+        updated_match = Match(player_1_updated_login_name,player_2_updated_login_name)
         restored_gameday_obj.update_match(match_to_update,player_1_updated_login_name, player_2_updated_login_name)
+        restored_gameday_obj.update_match(updated_match, match_status = 'active')
         serialize_gameday_obj(session = session, gameday_obj=restored_gameday_obj)
-        gameday_data = session.get('gameday_object')
-        print(f'Serialized gameday object after clicked_button == submit_updated_players: {gameday_data}')
 
         return redirect(url_for('admin'))
                     
 
-@app.route('/admin/refresh', methods=['GET', 'POST'])
-def refresh():
-    from gameday import deserialize_gameday_obj
-    admin_name = session.get('user_name')
-    gameday_obj = deserialize_gameday_obj(session = session)
-    return render_template('admin.html',user_name = admin_name, four_matches_list = gameday_obj.create_four_matches())
+@app.route('/admin/create_match_by_system', methods = ['GET','POST'])
+def create_match_by_system():
+    player_1_login_name = request.form.get('player_1_login_name')
+    player_2_login_name = request.form.get('player_2_login_name')
+    print(player_1_login_name)
+    print(player_2_login_name)
+    match_to_update = Match(player_1_login_name, player_2_login_name)
+
+    from gameday import deserialize_gameday_obj,serialize_gameday_obj
+    restored_gameday_obj = deserialize_gameday_obj(session=session)
+    restored_gameday_obj. update_match(match_to_update,match_status = 'played',match_html_display_status = False) 
+    serialize_gameday_obj(session,restored_gameday_obj)
+    
+    for index, match in enumerate(restored_gameday_obj.get_gameday_matches()):
+        print("{:<20} {:<20} {:<20} {:<20} {:<20}".format(
+            f"Match {index + 1}",
+            match.player_1_login_name, 
+            match.player_2_login_name, 
+            match.status, 
+            match.html_display_status
+        ))
+    
+    if restored_gameday_obj.find_specified_match(match_status = 'active', match_html_display_status = False):
+         return redirect(url_for('admin'))
+    flash('No more planned matches for today. Please create more matches manually via Edit button', 'info')
+    return redirect(url_for('admin'))
 
 
 @app.route('/logout')

@@ -19,7 +19,11 @@ Admin Dashboard
         {% if match.status != 'played' %}
             <button class="action-button" onclick="openResultPopup('{{ match.player_1_login_name }}', '{{ match.player_2_login_name }}')">Enter results</button>
         {% endif %}
-        <button class="action-button">Next Game</button>
+        <form action="{{ url_for('create_match_by_system') }}" method="POST">
+            <input type="hidden" name="player_1_login_name" value="{{ match.player_1_login_name }}">
+            <input type="hidden" name="player_2_login_name" value="{{ match.player_2_login_name }}">
+            <button class="action-button">Next Game</button>
+        </form>
     </div>
     {% endfor %}
 </div>
