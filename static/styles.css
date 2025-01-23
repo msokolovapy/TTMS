@@ -1,12 +1,13 @@
 body {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    justify-content: flex-start;
     flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
     margin: 0;
+    padding-top: 50px;
 }
 
 h1 {
@@ -25,6 +26,7 @@ form {
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-top: 30px;
 }
 
 label, input {
@@ -89,7 +91,11 @@ a:hover {
 .flashes {
     list-style-type: none;
     padding: 0;
-    margin: 0 0 20px 0;
+    margin: 0;
+    width: auto;
+    text-align: center;
+    position: relative;
+    top: 0;
 }
 
 .flashes li.success {
@@ -119,6 +125,7 @@ a:hover {
     border-radius: 5px;
 }
 
+
 /* Admin dashboard grid styling */
 .grid-container {
     display: grid;
@@ -127,7 +134,7 @@ a:hover {
     gap: 20px;
     width: 80vw;
     height: 80vh;
-    margin: 0 auto;
+    margin-top: 30px;
 }
 
 .sector {

@@ -1,5 +1,6 @@
 #app.py
 import json
+import time
 from flask import Flask, render_template, redirect, url_for, request, flash, session,jsonify
 from extensions import db, bcrypt  # Import db and bcrypt from extensions
 from models_user import User, GameDayPlayer # Import models after initializing extensions
@@ -40,6 +41,18 @@ def login():
             if user.player_role == 'admin':
                 from gameday import GameDay, serialize_gameday_obj
                 gameday_obj = GameDay()
+
+                print(f'Match summary after loading "/admin" page:')
+                print(100 *'=')
+                for index, match in enumerate(gameday_obj.get_gameday_matches()):
+                    print("{:<20} {:<20} {:<20} {:<20} {:<20}".format(
+                        f"Match {index + 1}",
+                        match.player_1_login_name, 
+                        match.player_2_login_name, 
+                        match.status, 
+                        match.html_display_status
+                    ))
+
                 serialize_gameday_obj(session = session, gameday_obj = gameday_obj)
                 return redirect(url_for('admin'))
             else:
@@ -94,6 +107,15 @@ def admin():
     admin_name = session.get('user_name')
     from gameday import deserialize_gameday_obj
     restored_gameday_obj = deserialize_gameday_obj(session=session)
+
+    # for index, match in enumerate(restored_gameday_obj.get_gameday_matches()):
+    #     print("{:<20} {:<20} {:<20} {:<20} {:<20}".format(
+    #         f"Match {index + 1}",
+    #         match.player_1_login_name, 
+    #         match.player_2_login_name, 
+    #         match.status, 
+    #         match.html_display_status
+    #     ))
 
     return render_template('admin.html',user_name = admin_name, four_matches_list = restored_gameday_obj.create_four_matches())
 
@@ -163,28 +185,38 @@ def create_match_manually():
 def create_match_by_system():
     player_1_login_name = request.form.get('player_1_login_name')
     player_2_login_name = request.form.get('player_2_login_name')
-    print(player_1_login_name)
-    print(player_2_login_name)
+    admin_name = session.get('user_name')
+    print('Next Game button clicked')
+    print(f'Matches created by system for {player_1_login_name} and {player_2_login_name}:')
+    print(100 * '=')
     match_to_update = Match(player_1_login_name, player_2_login_name)
 
     from gameday import deserialize_gameday_obj,serialize_gameday_obj
     restored_gameday_obj = deserialize_gameday_obj(session=session)
     restored_gameday_obj. update_match(match_to_update,match_status = 'played',match_html_display_status = False) 
-    serialize_gameday_obj(session,restored_gameday_obj)
     
-    for index, match in enumerate(restored_gameday_obj.get_gameday_matches()):
-        print("{:<20} {:<20} {:<20} {:<20} {:<20}".format(
-            f"Match {index + 1}",
-            match.player_1_login_name, 
-            match.player_2_login_name, 
-            match.status, 
-            match.html_display_status
-        ))
     
     if restored_gameday_obj.find_specified_match(match_status = 'active', match_html_display_status = False):
-         return redirect(url_for('admin'))
-    flash('No more planned matches for today. Please create more matches manually via Edit button', 'info')
-    return redirect(url_for('admin'))
+        any_active_match = restored_gameday_obj.find_specified_match(match_status = 'active', match_html_display_status = False)
+        restored_gameday_obj.update_match(match_to_update=any_active_match,match_html_display_status=True)
+        serialize_gameday_obj(session,restored_gameday_obj)
+
+        for index, match in enumerate(restored_gameday_obj.get_gameday_matches()):
+            print("{:<20} {:<20} {:<20} {:<20} {:<20}".format(
+                f"Match {index + 1}",
+                match.player_1_login_name, 
+                match.player_2_login_name, 
+                match.status, 
+                match.html_display_status
+            ))
+
+        return redirect(url_for('admin'))
+    flash('No more matches planned for today. Please create a match manually via Edit button', 'info')
+    serialize_gameday_obj(session,restored_gameday_obj)    
+    return render_template('admin.html',user_name = admin_name,
+                            four_matches_list = restored_gameday_obj.create_four_matches(),
+                            check_availability_matches = False)
+    
 
 
 @app.route('/logout')

@@ -173,26 +173,26 @@ class GameDay():
                 raise ValueError('Match list is empty')
             
             #finds specific match:
-            if match_to_find:
+            if match_to_find is not None:
                 for match in matches_list:
                     if match == match_to_find:
                         return match
                 return None
             
             #finds any match that satisfies any of below criteria:
-            if match_status and match_html_display_status:
+            if match_status is not None and match_html_display_status is not None:
                 for match in matches_list:
                     if match.status == match_status and match.html_display_status == match_html_display_status:
                         return match
-                return False
+                return None
 
-            if match_status:
+            if match_status is not None:
                 for match in matches_list:
                     if match.status == match_status:
                         return match
                 return False  
 
-            if match_html_display_status:
+            if match_html_display_status is not None:
                 for match in matches_list:
                     if match.html_display_status == match_html_display_status:
                         return match
@@ -222,15 +222,15 @@ class GameDay():
         if not found_match:
             raise ValueError('Match not found while update_match()')
 
-        if player_1_login_name and player_2_login_name:
+        if player_1_login_name is not None and player_2_login_name is not None:
             setattr(found_match, 'player_1_login_name', player_1_login_name)
             setattr(found_match, 'player_2_login_name', player_2_login_name)
 
-        if match_status and match_html_display_status is not None:
+        if match_status is not None and match_html_display_status is not None:
             setattr(found_match, 'status', match_status)
             setattr(found_match, 'html_display_status', match_html_display_status)
             
-        if match_status:
+        if match_status is not None:
             setattr(found_match, 'status', match_status)
 
         if match_html_display_status is not None:
