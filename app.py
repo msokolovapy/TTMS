@@ -197,6 +197,7 @@ def create_match_by_system():
     
     
     if restored_gameday_obj.find_specified_match(match_status = 'active', match_html_display_status = False):
+        
         any_active_match = restored_gameday_obj.find_specified_match(match_status = 'active', match_html_display_status = False)
         restored_gameday_obj.update_match(match_to_update=any_active_match,match_html_display_status=True)
         serialize_gameday_obj(session,restored_gameday_obj)
