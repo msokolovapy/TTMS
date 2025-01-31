@@ -1,13 +1,11 @@
 #app.py
-import json
-import time
-from flask import Flask, render_template, redirect, url_for, request, flash, session,jsonify
-from extensions import db, bcrypt  # Import db and bcrypt from extensions
-from models_user import User, GameDayPlayer # Import models after initializing extensions
+from flask import Flask, render_template, redirect, url_for, request, flash, session
+from extensions import db, bcrypt
+from models_user import User
 from models_match import Match  
 from datetime import datetime
 import os
-import logging
+import stripe
 
 
 
@@ -235,7 +233,8 @@ def cash_payment():
     #change booking payment status to Paid in Full
     pass
 
-from models_booking import Booking
+from models_booking import Booking, Payment
+from stripe_checkout import create_stripe_session
 
 @app.route('/users', methods=['GET', 'POST'])
 #to add:
@@ -276,10 +275,21 @@ def users():
                                 required_booking_date = selected_available_date)
                 db.session.add(new_booking)
                 db.session.commit()
+
+                new_payment = Payment(fk_booking_id = new_booking.booking_id, payment_status = 'unpaid')
+                db.session.add(new_payment)
+                db.session.commit()                
                 flash(f'You are booked for {selected_available_date}. See you there!','success')
                 available_user_booking = retrieve_all_bookings_for_user(user_name=user_name) #refresh available dates for drop-down list
+                
+                stripe_session = create_stripe_session(new_booking.booking_id)
+                new_payment.stripe_session_id = stripe_session.id
+                db.session.commit()
+                return redirect(stripe_session.url, code=303)
+
             else:
                 flash('No booking made!','danger')
+
         elif action == 'delete_booking':
                 selected_date_to_delete = request.form.get('delete_booking_date')
                 if selected_date_to_delete:
@@ -294,6 +304,37 @@ def users():
     return render_template('user.html', 
                        all_available_bookings_period_60_days=formatted_all_available_bookings_period_60_days,
                        available_user_booking = formatted_available_user_booking, user_name = user_name)
+
+
+@app.route('/user/payment_success')
+def success():
+    booking_id = request.args.get('booking_id')
+    stripe.api_key = 'sk_test_51Qmkf8BaZDAfc4fNRXKFyD47bswWxKHpAHD1QDyy7cv3asinDAYCkFt1Tr3kLIx3A9mhjIgz8hPezzHlXTK7sh5V004fxas5eQ'
+
+    try:
+        payment = Payment.query.filter_by(fk_booking_id=booking_id).first()
+        session = stripe.checkout.Session.retrieve(payment.stripe_session_id)
+
+        if session.payment_status == 'paid':
+            payment.payment_status = 'paid'
+            payment.date_time_payment_made = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            db.session.commit()
+            flash("Payment successful! Your booking is confirmed.", 'success')
+            return redirect(url_for('login'))
+        else:
+            flash("Payment failed or canceled.", 'danger')
+            return redirect(url_for('login'))
+
+    except stripe.error.StripeError as e:
+        # Handle Stripe error
+        flash(f"Stripe error: {e.user_message}", 'danger')
+        return redirect(url_for('login'))
+
+
+@app.route('/user/payment_cancel')
+def cancel():
+    flash("Payment canceled by Stripe. Please try again.",'danger')
+    return redirect(url_for('login'))
 
 
 
