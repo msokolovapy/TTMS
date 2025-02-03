@@ -248,7 +248,7 @@ def users():
     user_name = session.get('user_name')
     
     from models_booking import find_available_bookings, retrieve_all_bookings_for_user
-    all_available_bookings_period_60_days = find_available_bookings()
+    all_available_bookings_period_60_days = find_available_bookings(user_name)
     formatted_all_available_bookings_period_60_days = [
         {
             'original': date,
@@ -271,8 +271,8 @@ def users():
             selected_available_date = request.form.get('choose_available_booking_date')
                         
             if selected_available_date:
-                new_booking = Booking(date_time_booking_made = datetime.now(),player_login_name = user_name, 
-                                required_booking_date = selected_available_date)
+                new_booking = Booking(date_time_booking_made = datetime.now().strftime('%Y-%m-%d %H:%M:%S'),player_login_name = user_name, \
+                                      required_booking_date = selected_available_date)
                 db.session.add(new_booking)
                 db.session.commit()
 
@@ -285,6 +285,9 @@ def users():
                 stripe_session = create_stripe_session(new_booking.booking_id)
                 new_payment.stripe_session_id = stripe_session.id
                 db.session.commit()
+
+                all_available_bookings_period_60_days #refresh drop down list with available booking dates
+
                 return redirect(stripe_session.url, code=303)
 
             else:

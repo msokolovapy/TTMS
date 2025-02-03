@@ -1,6 +1,6 @@
 from extensions import db
 import datetime
-from sqlalchemy import func, select
+from sqlalchemy import func, select,and_
 # from app import app
 
 
@@ -42,6 +42,8 @@ def find_tuesdays_and_thursdays():
     return set(result)
 
 def find_non_available_bookings():
+    """""This function provides a list of booking dates that were requested by clients 8 times. 
+    Using this function helps to avoid overbooking by limiting booking slots to 4 tablesX 2 players = 8"""
     ranked_bookings = (
         select(
             func.date(Booking.required_booking_date).label('booking_date'),
@@ -62,20 +64,37 @@ def find_non_available_bookings():
     return results
 
 
-def find_available_bookings():
+def find_available_bookings(user_name):
     possible_booking_dates = find_tuesdays_and_thursdays()
     non_available_bookings = find_non_available_bookings()
-    available_booking_dates = possible_booking_dates - non_available_bookings
+    preexisting_bookings = check_if_booking_preexists(user_name)
+
+    available_booking_dates = possible_booking_dates - non_available_bookings-preexisting_bookings
     
     return sorted(list(available_booking_dates))
-
 
 def retrieve_all_bookings_for_user(user_name):
     existing_bookings_query = (
         select(Booking.required_booking_date)
-        .where(Booking.player_login_name == user_name))
+        .where(Booking.player_login_name == user_name)
+        .order_by(Booking.required_booking_date.asc()))
     existing_booking_lst = [row[0] for row in db.session.execute(existing_bookings_query).fetchall()]
     return existing_booking_lst
+
+
+def check_if_booking_preexists(user_name):
+    preexisting_bookings_query = (
+    select(Booking.required_booking_date)
+    .where(
+        and_(
+            Booking.player_login_name == user_name,
+            Booking.required_booking_date >= func.strftime('%Y-%m-%d', func.now())
+        )
+    )
+)
+    preexisting_booking_lst = [row[0] for row in db.session.execute(preexisting_bookings_query).fetchall()]
+
+    return set(preexisting_booking_lst)
 
 # with app.app_context():
 #     Payment.__table__.create(db.engine)
