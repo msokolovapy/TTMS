@@ -2,7 +2,8 @@ TTMS
 TO DO LIST
 
 	
-* New Game button: action linked to admin/refresh route
+* remove troubleshooting by print statements throughout all of my code
+* json and zip for serialization
 
 
 

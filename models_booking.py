@@ -42,8 +42,8 @@ def find_tuesdays_and_thursdays():
     return set(result)
 
 def find_non_available_bookings():
-    """""This function provides a list of booking dates that were requested by clients 8 times. 
-    Using this function helps to avoid overbooking by limiting booking slots to 4 tablesX 2 players = 8"""
+    """""This function provides a list of booking dates that were requested 8 times. 
+    Using this function helps avoid overbooking by limiting booking slots to 4 tables X 2 players = 8"""
     ranked_bookings = (
         select(
             func.date(Booking.required_booking_date).label('booking_date'),
@@ -67,34 +67,59 @@ def find_non_available_bookings():
 def find_available_bookings(user_name):
     possible_booking_dates = find_tuesdays_and_thursdays()
     non_available_bookings = find_non_available_bookings()
-    preexisting_bookings = check_if_booking_preexists(user_name)
+    preexisting_bookings = set(retrieve_all_bookings_for_user(user_name))
 
     available_booking_dates = possible_booking_dates - non_available_bookings-preexisting_bookings
     
     return sorted(list(available_booking_dates))
 
+# def retrieve_all_bookings_for_user(user_name):
+#     existing_bookings_query = (
+#         select(Booking.required_booking_date)
+#         .where(Booking.player_login_name == user_name)
+#         .order_by(Booking.required_booking_date.asc()))
+#     existing_booking_lst = [row[0] for row in db.session.execute(existing_bookings_query).fetchall()]
+#     return existing_booking_lst
+
 def retrieve_all_bookings_for_user(user_name):
     existing_bookings_query = (
         select(Booking.required_booking_date)
-        .where(Booking.player_login_name == user_name)
+        .where(
+               and_(
+                    Booking.player_login_name == user_name, 
+                    Booking.required_booking_date >= func.strftime('%Y-%m-%d', func.now())
+                    )
+               )
         .order_by(Booking.required_booking_date.asc()))
     existing_booking_lst = [row[0] for row in db.session.execute(existing_bookings_query).fetchall()]
     return existing_booking_lst
 
 
-def check_if_booking_preexists(user_name):
-    preexisting_bookings_query = (
-    select(Booking.required_booking_date)
-    .where(
-        and_(
-            Booking.player_login_name == user_name,
-            Booking.required_booking_date >= func.strftime('%Y-%m-%d', func.now())
-        )
-    )
-)
-    preexisting_booking_lst = [row[0] for row in db.session.execute(preexisting_bookings_query).fetchall()]
+# def check_if_booking_preexists(user_name):
+#     preexisting_bookings_query = (
+#     select(Booking.required_booking_date)
+#     .where(
+#         and_(
+#             Booking.player_login_name == user_name,
+#             Booking.required_booking_date >= func.strftime('%Y-%m-%d', func.now())
+#         )
+#     )
+# )
+#     preexisting_booking_lst = [row[0] for row in db.session.execute(preexisting_bookings_query).fetchall()]
 
-    return set(preexisting_booking_lst)
+#     return set(preexisting_booking_lst)
+
+
+def refund_eligibility_check(required_booking_date):
+    """This function checks if there is at least 24 hours between the 
+    cancellation time and required booking time
+    """
+    required_booking_date_time = required_booking_date + ' 00:00:00'
+    time_delta = abs(datetime.datetime.strptime(required_booking_date_time, '%Y-%m-%d %H:%M:%S') - datetime.datetime.now().replace(microsecond=0))
+    if time_delta.total_seconds() >= 24 * 60 * 60:
+        return True
+    return False
+
 
 # with app.app_context():
 #     Payment.__table__.create(db.engine)

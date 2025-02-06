@@ -1,0 +1,42 @@
+def get_match_results():
+    """This function obtains individual scores of two players from a form and 
+       writes game scores as a list of tuples
+    """
+    from flask import request
+    game_results = []
+    for i in range(1, 6):
+        game1_score = request.form.get(f'player1_game_{i}')
+        game2_score = request.form.get(f'player2_game_{i}')
+        if game1_score and game2_score:
+            game_results.append((game1_score, game2_score))
+    
+    return str(tuple(game_results))
+
+
+        match_to_update = Match(player_1_original_login_name,player_2_original_login_name)
+        #remove updated_match
+        #updated_match = Match(player_1_updated_login_name,player_2_updated_login_name)
+        restored_gameday_obj.update_match(match_to_update,player_1_updated_login_name, player_2_updated_login_name, match_status = 'active' )
+        #remove next line
+        #restored_gameday_obj.update_match(updated_match, match_status = 'active')
+
+
+     any_active_match = restored_gameday_obj.find_specified_match(match_status = 'active', match_html_display_status = False)
+     if not any_active_match():
+             flash('No more matches planned for today. \
+                    Please create a match manually via Edit button', 'info')   
+             return render_template('admin.html',user_name = admin_name,
+                            four_matches_list = restored_gameday_obj.create_four_matches(),
+                            check_availability_matches = False)
+     restored_gameday_obj.update_match(match_to_update=any_active_match, \
+                                       match_html_display_status=True)
+     serialize_gameday_obj(session,restored_gameday_obj)
+     return redirect(url_for('admin'))
+
+
+
+
+
+
+
+    

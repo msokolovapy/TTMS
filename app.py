@@ -34,23 +34,12 @@ def login():
             session['user_id'] = user.player_id
             session['user_role'] = user.player_role
             session['user_name'] = user.player_login_name
+            session['player_rank'] = user.player_rank
             flash('Login successful!', 'success')
 
             if user.player_role == 'admin':
                 from gameday import GameDay, serialize_gameday_obj
                 gameday_obj = GameDay()
-
-                print(f'Match summary after loading "/admin" page:')
-                print(100 *'=')
-                for index, match in enumerate(gameday_obj.get_gameday_matches()):
-                    print("{:<20} {:<20} {:<20} {:<20} {:<20}".format(
-                        f"Match {index + 1}",
-                        match.player_1_login_name, 
-                        match.player_2_login_name, 
-                        match.status, 
-                        match.html_display_status
-                    ))
-
                 serialize_gameday_obj(session = session, gameday_obj = gameday_obj)
                 return redirect(url_for('admin'))
             else:
@@ -105,16 +94,6 @@ def admin():
     admin_name = session.get('user_name')
     from gameday import deserialize_gameday_obj
     restored_gameday_obj = deserialize_gameday_obj(session=session)
-
-    # for index, match in enumerate(restored_gameday_obj.get_gameday_matches()):
-    #     print("{:<20} {:<20} {:<20} {:<20} {:<20}".format(
-    #         f"Match {index + 1}",
-    #         match.player_1_login_name, 
-    #         match.player_2_login_name, 
-    #         match.status, 
-    #         match.html_display_status
-    #     ))
-
     return render_template('admin.html',user_name = admin_name, four_matches_list = restored_gameday_obj.create_four_matches())
 
 
@@ -184,9 +163,6 @@ def create_match_by_system():
     player_1_login_name = request.form.get('player_1_login_name')
     player_2_login_name = request.form.get('player_2_login_name')
     admin_name = session.get('user_name')
-    print('Next Game button clicked')
-    print(f'Matches created by system for {player_1_login_name} and {player_2_login_name}:')
-    print(100 * '=')
     match_to_update = Match(player_1_login_name, player_2_login_name)
 
     from gameday import deserialize_gameday_obj,serialize_gameday_obj
@@ -195,21 +171,11 @@ def create_match_by_system():
     
     
     if restored_gameday_obj.find_specified_match(match_status = 'active', match_html_display_status = False):
-        
         any_active_match = restored_gameday_obj.find_specified_match(match_status = 'active', match_html_display_status = False)
         restored_gameday_obj.update_match(match_to_update=any_active_match,match_html_display_status=True)
         serialize_gameday_obj(session,restored_gameday_obj)
-
-        for index, match in enumerate(restored_gameday_obj.get_gameday_matches()):
-            print("{:<20} {:<20} {:<20} {:<20} {:<20}".format(
-                f"Match {index + 1}",
-                match.player_1_login_name, 
-                match.player_2_login_name, 
-                match.status, 
-                match.html_display_status
-            ))
-
         return redirect(url_for('admin'))
+    
     flash('No more matches planned for today. Please create a match manually via Edit button', 'info')
     serialize_gameday_obj(session,restored_gameday_obj)    
     return render_template('admin.html',user_name = admin_name,
@@ -223,15 +189,6 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-@app.route('/users/payment')
-def user_payment():
-    #redirects to Stripe or pay in cash at the venue. Payment status in ['paid','unpaid','deferred']
-    pass
-
-@app.route('/cash_payment')
-def cash_payment():
-    #change booking payment status to Paid in Full
-    pass
 
 from models_booking import Booking, Payment
 from stripe_checkout import create_stripe_session
@@ -239,13 +196,12 @@ from stripe_checkout import create_stripe_session
 @app.route('/users', methods=['GET', 'POST'])
 #to add:
 # Summary of user details including current ranking
-#upon clicking on Make a booking button redirects to payment page
-
 def users():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
     user_name = session.get('user_name')
+    player_rank = session.get('player_rank')
     
     from models_booking import find_available_bookings, retrieve_all_bookings_for_user
     all_available_bookings_period_60_days = find_available_bookings(user_name)
@@ -269,44 +225,50 @@ def users():
         action = request.form.get('action')
         if action == 'new_booking':
             selected_available_date = request.form.get('choose_available_booking_date')
-                        
             if selected_available_date:
                 new_booking = Booking(date_time_booking_made = datetime.now().strftime('%Y-%m-%d %H:%M:%S'),player_login_name = user_name, \
                                       required_booking_date = selected_available_date)
                 db.session.add(new_booking)
                 db.session.commit()
-
                 new_payment = Payment(fk_booking_id = new_booking.booking_id, payment_status = 'unpaid')
                 db.session.add(new_payment)
                 db.session.commit()                
-                flash(f'You are booked for {selected_available_date}. See you there!','success')
-                available_user_booking = retrieve_all_bookings_for_user(user_name=user_name) #refresh available dates for drop-down list
-                
                 stripe_session = create_stripe_session(new_booking.booking_id)
                 new_payment.stripe_session_id = stripe_session.id
                 db.session.commit()
-
-                all_available_bookings_period_60_days #refresh drop down list with available booking dates
-
+                flash(f"You are booked for {datetime.strptime(selected_available_date, '%Y-%m-%d').strftime('%d-%b-%Y')}.\
+                     See you there!",'success')
                 return redirect(stripe_session.url, code=303)
-
             else:
                 flash('No booking made!','danger')
 
         elif action == 'delete_booking':
-                selected_date_to_delete = request.form.get('delete_booking_date')
-                if selected_date_to_delete:
-                    booking_to_delete = Booking.query.filter_by(required_booking_date=selected_date_to_delete, player_login_name=user_name).first()
-                    db.session.delete(booking_to_delete)
-                    db.session.commit()
-                    flash(f"Booking on {selected_date_to_delete} deleted successfully.",'success')
-                    available_user_booking = retrieve_all_bookings_for_user(user_name=user_name) #refresh available dates for drop-down list
-                else:
-                    flash(f"No booking found for {selected_date_to_delete}.",'danger')
-    
+            from models_booking import refund_eligibility_check
+            selected_date_to_delete = request.form.get('delete_booking_date')
+            booking_to_delete = Booking.query.filter_by(required_booking_date=selected_date_to_delete, player_login_name=user_name).first()
+            payment_to_delete = Payment.query.filter_by(fk_booking_id = booking_to_delete.booking_id).first()
+            if refund_eligibility_check(selected_date_to_delete):
+                from stripe_checkout import restore_stripe_session, obtain_stripe_refund
+                stripe_session_id = payment_to_delete.stripe_session_id
+                stripe_session = restore_stripe_session(stripe_session_id)
+                payment_intent_id = stripe_session.payment_intent
+                obtain_stripe_refund(payment_intent_id)
+                flash("Your refund is being processed. \
+                        The funds should appear in your account within 5-6 business days. \
+                        Thank you for your patience.", 'success')
+            else:   
+                flash("Refund not available: Cancellations must be made at least 24 hours prior to the booking date. \
+                        Unfortunately, your cancellation was made too late.", 'danger')   
+            
+            db.session.delete(payment_to_delete)
+            db.session.delete(booking_to_delete)
+            db.session.commit()
+            flash(f"Booking on {selected_date_to_delete} deleted successfully.",'success')
+            return redirect(url_for('users'))
+
     return render_template('user.html', 
                        all_available_bookings_period_60_days=formatted_all_available_bookings_period_60_days,
-                       available_user_booking = formatted_available_user_booking, user_name = user_name)
+                       available_user_booking = formatted_available_user_booking, user_name = user_name, player_rank = player_rank)
 
 
 @app.route('/user/payment_success')
@@ -323,15 +285,12 @@ def success():
             payment.date_time_payment_made = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             db.session.commit()
             flash("Payment successful! Your booking is confirmed.", 'success')
-            return redirect(url_for('login'))
         else:
             flash("Payment failed or canceled.", 'danger')
-            return redirect(url_for('login'))
-
     except stripe.error.StripeError as e:
-        # Handle Stripe error
         flash(f"Stripe error: {e.user_message}", 'danger')
-        return redirect(url_for('login'))
+    
+    return redirect(url_for('users'))
 
 
 @app.route('/user/payment_cancel')

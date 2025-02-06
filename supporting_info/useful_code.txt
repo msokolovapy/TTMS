@@ -1,0 +1,29 @@
+
+print(f'Match summary after loading "/admin" page:')
+                print(100 *'=')
+                for index, match in enumerate(gameday_obj.get_gameday_matches()):
+                    print("{:<20} {:<20} {:<20} {:<20} {:<20}".format(
+                        f"Match {index + 1}",
+                        match.player_1_login_name, 
+                        match.player_2_login_name, 
+                        match.status, 
+                        match.html_display_status
+                    ))
+
+
+
+print('Next Game button clicked')
+    print(f'Matches created by system for {player_1_login_name} and {player_2_login_name}:')
+    print(100 * '=')
+
+
+               print(f'Match summary after loading "/admin" page:')
+                print(100 *'=')
+                for index, match in enumerate(gameday_obj.get_gameday_matches()):
+                    print("{:<20} {:<20} {:<20} {:<20} {:<20}".format(
+                        f"Match {index + 1}",
+                        match.player_1_login_name, 
+                        match.player_2_login_name, 
+                        match.status, 
+                        match.html_display_status
+                    ))

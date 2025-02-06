@@ -6,6 +6,7 @@ User Dashboard
 
 {% block content %}
     <h1>Welcome to the User Dashboard, {{ user_name }}!</h1>
+    <h2>Your rank is: {{ player_rank }}</h2>
     <form action="/users" method="POST">
         <label for="choose_available_booking_date">Select an available date to book:</label>
         <select id="choose_available_booking_date" name="choose_available_booking_date">

@@ -25,4 +25,17 @@ def create_stripe_session(booking_id):
         return session
     except Exception as e:
         return str(e)
+    
+
+def restore_stripe_session(stripe_session_id):
+    stripe_session = stripe.checkout.Session.retrieve(stripe_session_id)
+    return stripe_session
+
+def obtain_stripe_refund(payment_intent_id):
+    stripe.Refund.create(
+    payment_intent=payment_intent_id)
+
+
+
+
 

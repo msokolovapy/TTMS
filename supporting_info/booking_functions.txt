@@ -1,0 +1,22 @@
+def format_dates_for_display(dates_list):
+   """This function formats input as 'DD-MMM-YYYY, Day of the Week' to improve readability in drop-down lists
+   """
+    return [
+        {
+            'original': date,
+            'formatted': datetime.strptime(date, '%Y-%m-%d').strftime('%d-%b-%Y, %A')
+        } 
+        for date in dates_list
+            ]
+
+
+
+
+
+
+
+
+
+    return render_template('user.html', 
+                       all_available_bookings_period_60_days=formatted_all_available_bookings_period_60_days,
+                       available_user_booking = formatted_available_user_booking, user_name = user_name, player_rank = player_rank)
