@@ -41,6 +41,12 @@ def login():
                 from gameday import GameDay, serialize_gameday_obj
                 gameday_obj = GameDay()
                 serialize_gameday_obj(session = session, gameday_obj = gameday_obj)
+
+                from gameday import display_gameday_matches
+                print('Gameday matches at admin login:')
+                print(100*'=')
+                display_gameday_matches(gameday_obj.get_gameday_matches())
+
                 return redirect(url_for('admin'))
             else:
                 return redirect(url_for('users'))
@@ -99,18 +105,11 @@ def admin():
 
 @app.route('/admin/submit_match_results', methods=['GET', 'POST'])
 def submit_match_results():
+    from models_match import get_match_results
     player1 = request.form.get('player1_login_name')
     player2 = request.form.get('player2_login_name')
     last_played = match_start_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    
-    game_results = []
-    for i in range(1, 6):
-        game1_score = request.form.get(f'player1_game_{i}')
-        game2_score = request.form.get(f'player2_game_{i}')
-        if game1_score and game2_score:
-            game_results.append((game1_score, game2_score))
-    
-    match_result = str(tuple(game_results))
+    match_result = get_match_results()
 
     played_match = Match(
         match_start_date_time = match_start_date,
@@ -150,9 +149,7 @@ def create_match_manually():
         player_2_updated_login_name = request.form.get('player_2_updated_login_name')
 
         match_to_update = Match(player_1_original_login_name,player_2_original_login_name)
-        updated_match = Match(player_1_updated_login_name,player_2_updated_login_name)
-        restored_gameday_obj.update_match(match_to_update,player_1_updated_login_name, player_2_updated_login_name)
-        restored_gameday_obj.update_match(updated_match, match_status = 'active')
+        restored_gameday_obj.update_match(match_to_update,player_1_updated_login_name, player_2_updated_login_name, 'active')
         serialize_gameday_obj(session = session, gameday_obj=restored_gameday_obj)
 
         return redirect(url_for('admin'))
@@ -160,6 +157,10 @@ def create_match_manually():
 
 @app.route('/admin/create_match_by_system', methods = ['GET','POST'])
 def create_match_by_system():
+    """This function receives player login names from an html form, creates match object, 
+    updates match object status to 'played' and randomly selects any 'active' match from 
+    gameday object's gameday_matches list to be displayed on html form 
+    """
     player_1_login_name = request.form.get('player_1_login_name')
     player_2_login_name = request.form.get('player_2_login_name')
     admin_name = session.get('user_name')
@@ -167,21 +168,33 @@ def create_match_by_system():
 
     from gameday import deserialize_gameday_obj,serialize_gameday_obj
     restored_gameday_obj = deserialize_gameday_obj(session=session)
-    restored_gameday_obj. update_match(match_to_update,match_status = 'played',match_html_display_status = False) 
+    restored_gameday_obj. update_match(match_to_update,match_status = 'played',match_html_display_status = False)
+    if restored_gameday_obj.counter_active_matches()== 4:
+        from gameday import display_gameday_matches
+        print('Gameday matches at counter_active_matches = 4:')
+        print(100*'=')
+        display_gameday_matches(restored_gameday_obj.get_gameday_matches())
+
+
+        flash('No more matches planned for today. \
+                    Please create a match manually via Edit button', 'info')   
+        return render_template('admin.html',user_name = admin_name,
+                                    four_matches_list = restored_gameday_obj.create_four_matches(),
+                                     check_availability_matches = False)
     
-    
-    if restored_gameday_obj.find_specified_match(match_status = 'active', match_html_display_status = False):
+    else:
         any_active_match = restored_gameday_obj.find_specified_match(match_status = 'active', match_html_display_status = False)
-        restored_gameday_obj.update_match(match_to_update=any_active_match,match_html_display_status=True)
+        restored_gameday_obj.update_match(match_to_update=any_active_match, \
+                                        match_html_display_status=True)
+        
+        from gameday import display_gameday_matches
+        print('Gameday matches created by system:')
+        print(100*'=')
+        display_gameday_matches(restored_gameday_obj.get_gameday_matches())
+
+
         serialize_gameday_obj(session,restored_gameday_obj)
         return redirect(url_for('admin'))
-    
-    flash('No more matches planned for today. Please create a match manually via Edit button', 'info')
-    serialize_gameday_obj(session,restored_gameday_obj)    
-    return render_template('admin.html',user_name = admin_name,
-                            four_matches_list = restored_gameday_obj.create_four_matches(),
-                            check_availability_matches = False)
-    
 
 
 @app.route('/logout')
@@ -190,9 +203,6 @@ def logout():
     return redirect(url_for('login'))
 
 
-from models_booking import Booking, Payment
-from stripe_checkout import create_stripe_session
-
 @app.route('/users', methods=['GET', 'POST'])
 #to add:
 # Summary of user details including current ranking
@@ -200,26 +210,12 @@ def users():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
+    from models_booking import Booking, Payment,find_available_bookings, retrieve_all_bookings_for_user,format_dates_for_display
+    from stripe_checkout import create_stripe_session
     user_name = session.get('user_name')
     player_rank = session.get('player_rank')
-    
-    from models_booking import find_available_bookings, retrieve_all_bookings_for_user
-    all_available_bookings_period_60_days = find_available_bookings(user_name)
-    formatted_all_available_bookings_period_60_days = [
-        {
-            'original': date,
-            'formatted': datetime.strptime(date, '%Y-%m-%d').strftime('%d-%b-%Y, %A')
-        } 
-        for date in all_available_bookings_period_60_days
-    ]
-    available_user_booking = retrieve_all_bookings_for_user(user_name=user_name)
-    formatted_available_user_booking = [
-        {
-            'original': date,
-            'formatted': datetime.strptime(date, '%Y-%m-%d').strftime('%d-%b-%Y, %A')
-        } 
-        for date in available_user_booking
-    ]
+    formatted_all_available_bookings_period_60_days = format_dates_for_display(find_available_bookings(user_name))
+    formatted_available_user_booking = format_dates_for_display(retrieve_all_bookings_for_user(user_name))
         
     if request.method == 'POST':
         action = request.form.get('action')
@@ -273,6 +269,7 @@ def users():
 
 @app.route('/user/payment_success')
 def success():
+    from models_booking import Payment
     booking_id = request.args.get('booking_id')
     stripe.api_key = 'sk_test_51Qmkf8BaZDAfc4fNRXKFyD47bswWxKHpAHD1QDyy7cv3asinDAYCkFt1Tr3kLIx3A9mhjIgz8hPezzHlXTK7sh5V004fxas5eQ'
 

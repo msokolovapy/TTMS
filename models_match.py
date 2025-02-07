@@ -51,7 +51,7 @@ class Match(db.Model):
         if games_won_by_player_1 > games_won_by_player_2:  
             return self.player_1_login_name, self.player_2_login_name
         else:
-            return self.player_2_login_name, self.player_1_login_name                
+            return self.player_2_login_name, self.player_1_login_name 
 
     def extract_current_player_rank(self):
         winner_name, loser_name = self.determine_match_winner()
@@ -123,9 +123,17 @@ def calculate_elo(winner_rating, loser_rating, k_factor=32):
     
     return round(winner_new_rating, 2), round(loser_new_rating, 2)
 
-
-if __name__ == '__main__':
-    match1 = Match('mike','mike')
-    match2 = Match('mike','jane')
-    print(match1==match2)
+def get_match_results():
+    """This function obtains individual scores of two players from a form and 
+       writes game scores as a list of tuples
+    """
+    from flask import request
+    game_results = []
+    for i in range(1, 6):
+        game1_score = request.form.get(f'player1_game_{i}')
+        game2_score = request.form.get(f'player2_game_{i}')
+        if game1_score and game2_score:
+            game_results.append((game1_score, game2_score))
     
+    return str(tuple(game_results))
+

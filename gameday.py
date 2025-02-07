@@ -137,22 +137,12 @@ class GameDay():
             player_2.players_played_already.append(player_1.player_login_name) 
             
             for player in players_found:
-                print('Player found')
                 if status:
-                    print('Attempting to edit players status')
                     setattr(player, 'player_status', status)
-                    # logging.info(f'Player {player.player_login_name} status updated to {status}')
-                
                 if last_played:
-                    print("Attempting to edit players 'last played'")
                     setattr(player, 'last_played', last_played)
-                    # logging.info(f'Player {player.player_login_name} last time played and gameday_player_list updated')
-                
-                print(player.__dict__)
-
         else:
             pass
-            # logging.error(f'Player duo not found. Players attributes not updated')
 
 
     def sort_gameday_players(self):
@@ -201,19 +191,6 @@ class GameDay():
             return None
 
 
-
-    # def find_specified_match(self, match_to_find):
-    #     matches_lst = self.get_gameday_matches().copy()
-    #     if matches_lst:
-    #         for match in matches_lst:
-    #             if match == match_to_find:
-    #                 print('Match found')
-    #                 return match
-    #         print('Match not found while find_specified_match()')
-    #         return None
-    #     else:
-    #         print('Matches list is empty')
-
     def update_match(self, match_to_update, player_1_login_name=None, 
                           player_2_login_name=None, match_status=None, 
                           match_html_display_status=None):
@@ -238,29 +215,9 @@ class GameDay():
 
         return None
 
-    # def update_match(self,played_match,player_1_login_name, player_2_login_name):
-    #     found_match = self.find_specified_match(match_to_find=played_match)
-    #     if found_match:
-    #         setattr(found_match,'player_1_login_name', player_1_login_name)
-    #         setattr(found_match,'player_2_login_name', player_2_login_name)
-    #     else:
-    #         print('Match not found while update_match()')
-
-    # def update_match_status(self,played_match,match_status):
-    #     found_match = self.find_specified_match(match_to_find=played_match)
-    #     if found_match:
-    #             print('Match exists prior to updating match status')
-    #             print('Attempting to update match status...')
-    #             setattr(found_match,'status',match_status)
-    #             print(f'Match between {found_match.player_1_login_name} and {found_match.player_2_login_name}. Desired match status is "{match_status}. Match status updated to "{found_match.status}"')
-    #     else:
-    #         print('Match not found while update_match_status()')
-
     def create_four_matches(self):
-
         """Creates a list of four match objects where match.status == 'active' and match.html_display_status = True
           to load into the html template"""
-        
         four_matches_list = [match_obj for match_obj in self.gameday_matches if match_obj.html_display_status]
         return four_matches_list
     
@@ -271,6 +228,10 @@ class GameDay():
         else:
             logger.info('Gameday players list empty. Impossible to update')
 
+    def counter_active_matches(self):
+        counter = sum(1 for match in self.gameday_matches if match.status == 'active'and match.html_display_status == True)
+        return counter
+
     def to_dict(self):
         return {
             'gameday_date': self.gameday_date,
@@ -279,7 +240,6 @@ class GameDay():
             'gameday_matches': [match.to_dict() for match in self.gameday_matches],  
                 }
 
-
     @classmethod
     def from_dict(cls, data):
         gameday_players = [GameDayPlayer.from_dict(player_data) for player_data in data['gameday_players']]
@@ -287,7 +247,6 @@ class GameDay():
         obj = cls()
         obj.gameday_date = data['gameday_date']
         obj.gameday_players_data = json.loads(data['gameday_players_data'])
-        # obj.gameday_players_data = [tuple(item) for item in json.loads(data['gameday_players_data'])]
         obj.gameday_players = gameday_players
         obj.gameday_matches = gameday_matches
         return obj
@@ -333,20 +292,10 @@ def create_drop_down_list(sorted_serialised_players_list):
 def display_gameday_matches(matches_list):
     for index,match in enumerate(matches_list):
         print("{:<10} {:<20} {:<20} {:<10} {:<10}".format(f'Match {index + 1}',match.player_1_login_name, \
-              match.player_2_login_name,match.status,\
-              match.html_display_status))
+                                                                                match.player_2_login_name,
+                                                                                match.status,\
+                                                                                match.html_display_status))
 
-
-
-if __name__=='__main__':
-    with app.app_context():
-        gameday = GameDay()
-        gameday.display_four_matches_list_details()
-        serialized_gameday_obj = gameday.to_dict()
-        print(sys.getsizeof(serialized_gameday_obj))
-        print(get_deep_size(serialized_gameday_obj))
-        print(serialized_gameday_obj)
-        gameday_obj_restored = GameDay.from_dict(serialized_gameday_obj)
 
 
 

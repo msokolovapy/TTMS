@@ -73,13 +73,6 @@ def find_available_bookings(user_name):
     
     return sorted(list(available_booking_dates))
 
-# def retrieve_all_bookings_for_user(user_name):
-#     existing_bookings_query = (
-#         select(Booking.required_booking_date)
-#         .where(Booking.player_login_name == user_name)
-#         .order_by(Booking.required_booking_date.asc()))
-#     existing_booking_lst = [row[0] for row in db.session.execute(existing_bookings_query).fetchall()]
-#     return existing_booking_lst
 
 def retrieve_all_bookings_for_user(user_name):
     existing_bookings_query = (
@@ -95,21 +88,6 @@ def retrieve_all_bookings_for_user(user_name):
     return existing_booking_lst
 
 
-# def check_if_booking_preexists(user_name):
-#     preexisting_bookings_query = (
-#     select(Booking.required_booking_date)
-#     .where(
-#         and_(
-#             Booking.player_login_name == user_name,
-#             Booking.required_booking_date >= func.strftime('%Y-%m-%d', func.now())
-#         )
-#     )
-# )
-#     preexisting_booking_lst = [row[0] for row in db.session.execute(preexisting_bookings_query).fetchall()]
-
-#     return set(preexisting_booking_lst)
-
-
 def refund_eligibility_check(required_booking_date):
     """This function checks if there is at least 24 hours between the 
     cancellation time and required booking time
@@ -119,6 +97,17 @@ def refund_eligibility_check(required_booking_date):
     if time_delta.total_seconds() >= 24 * 60 * 60:
         return True
     return False
+
+
+def format_dates_for_display(dates_list):
+   """This function formats input as 'DD-MMM-YYYY, Day of the Week' to improve readability in drop-down lists
+   """
+   return [
+        {
+            'original': date,
+            'formatted': datetime.strptime(date, '%Y-%m-%d').strftime('%d-%b-%Y, %A')
+        } 
+        for date in dates_list]
 
 
 # with app.app_context():
