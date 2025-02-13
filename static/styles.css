@@ -7,26 +7,31 @@ body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
     margin: 0;
-    padding-top: 50px;
+    padding-top: 100px;
+}
+
+body.body-admin {
+    padding-top: 5px;
 }
 
 h1 {
     font-size: 24px;
     text-align: center;
     color: #333;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
 }
+
 
 form {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     background-color: #fff;
-    padding: 20px;
+    padding: 10px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    margin-top: 30px;
+    margin-top: 10px;
 }
 
 label, input {
@@ -67,14 +72,15 @@ button:hover {
 a {
     display: block;
     padding: 10px 20px;
-    margin: 60px auto;  /* Center the logout link horizontally */
+    margin: 60px auto;
     text-decoration: none;
     background-color: #28a745;
     color: white;
     border-radius: 5px;
-    text-align: center;  /* Ensure the text is centered inside the button */
-    width: fit-content;  /* Makes the button width based on its content */
+    text-align: center;
+    width: fit-content;
     transition: background-color 0.3s;
+    font-size: 16px;
 }
 
 a:hover {
@@ -88,6 +94,7 @@ a:hover {
     margin-top: 20px;
 }
 
+
 .flashes {
     list-style-type: none;
     padding: 0;
@@ -97,6 +104,7 @@ a:hover {
     position: relative;
     top: 0;
 }
+
 
 .flashes li.success {
     color: green;
@@ -126,14 +134,13 @@ a:hover {
 }
 
 
-/* Admin dashboard grid styling */
 .grid-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
     gap: 20px;
-    width: 80vw;
-    height: 80vh;
+    width:80vw;
+    height:80vh;
     margin-top: 30px;
 }
 
@@ -149,10 +156,12 @@ a:hover {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
+
+
 h2 {
     font-size: 18px;
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom:10px;
 }
 
 .edit-button {
@@ -172,8 +181,8 @@ h2 {
 
 .animation-space {
     margin-bottom: 20px;
-    width: 300px;
-    height: 100px;
+    width: 10vw;
+    height: 10vh;
     background-color: #f4f4f4;
     display: flex;
     justify-content: center;
@@ -185,7 +194,7 @@ h2 {
 }
 
 .action-button {
-    padding: 10px 15px;
+    padding: 5px 5px;
     margin: 5px;
     background-color: #007bff;
     color: white;
@@ -202,23 +211,23 @@ h2 {
 
 /* New styling for button alignment */
 .button-container {
-    display: flex; /* Flexbox to align buttons horizontally */
-    justify-content: center; /* Center the buttons together horizontally */
-    align-items: center; /* Align them on the same vertical level */
-    margin-top: 10px; /* Optional: spacing from the animation area */
-    gap: 20px; /* Add space between Start Game and End Game buttons */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+    gap: 20px;
 }
 
-/* Pop-up styling */
+
 .popup {
-    display: none; /* Hidden by default */
+    display: none;
     position: fixed;
     z-index: 1;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Dark overlay */
+    background-color: rgba(0, 0, 0, 0.5);
     justify-content: center;
     align-items: center;
 }
@@ -268,12 +277,12 @@ h2 {
 
 
 .greyed-out {
-    background-color: #ccc;  /* Greyed out background */
-    pointer-events: none;    /* Disable interaction for everything inside */
+    background-color: #ccc;
+    pointer-events: none;
 }
 
 .greyed-out .action-button,
 .greyed-out .edit-button {
-    pointer-events: auto;  /* Enable interaction for specific buttons */
-    opacity: 1;            /* Ensure buttons are fully visible */
+    pointer-events: auto;
+    opacity: 1;
 }

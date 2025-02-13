@@ -3,7 +3,6 @@ import logging
 import random
 import sys
 import json
-from app import app
 from sqlalchemy import cast, Float
 from extensions import db
 from models_booking import Booking
@@ -229,8 +228,9 @@ class GameDay():
             logger.info('Gameday players list empty. Impossible to update')
 
     def counter_active_matches(self):
-        counter = sum(1 for match in self.gameday_matches if match.status == 'active'and match.html_display_status == True)
+        counter = sum(1 for match in self.gameday_matches if match.status == 'active' and not match.html_display_status)
         return counter
+    
 
     def to_dict(self):
         return {

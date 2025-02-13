@@ -1,10 +1,25 @@
-{% extends "login.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+</head>
 
-{% block title %}
-Admin Dashboard
-{% endblock %}
+<div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul class="flashes">
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+</div> 
 
-{% block content %}
+<body class="body-admin">
 <h1>Welcome to the Admin Dashboard, {{ user_name }}!</h1>
 <div class="grid-container">
     {% for match in four_matches_list %}
@@ -62,27 +77,6 @@ Admin Dashboard
     </div>
 </div>
 
-<!--
-<div id="editPopup" class="popup">
-    <div class="popup-content">
-        <span class="close-button" onclick="closeEditPopup()">&times;</span>
-        <h3>Edit match between <span id="editPlayer1Name"></span> and <span id="editPlayer2Name"></span></h3>
-        <form id="matchEditForm" method="POST" action="{{ url_for('create_match_manually') }}">
-            <select id="update_player_1_login_name" name="player_1_updated_login_name">
-                {% for player_info in drop_down_list %}
-                    <option value="{{ player_info['original'] }}">{{ player_info['formatted'] | escape }}</option>
-                {% endfor %}
-             </select>
-             <select id="update_player_2_login_name" name="player_2_updated_login_name">
-                {% for player_info in drop_down_list %}
-                    <option value="{{ player_info['original'] }}">{{ player_info['formatted'] | escape }}</option>
-                {% endfor %}
-            </select>
-            <button type="submit" class="action-button">Edit</button>
-        </form>
-    </div>
-</div>
--->
 
 <a href="{{ url_for('logout') }}">Logout</a>
 
@@ -101,42 +95,5 @@ Admin Dashboard
         document.getElementById("resultPopup").style.display = "none";
     }
 </script>
- 
-<!--
-<script>
-    function openEditPopup(player1, player2, dropDownList) {
-        document.getElementById("editPlayer1Name").textContent = player1;
-        document.getElementById("editPlayer2Name").textContent = player2;
-
-        // Directly use the dropDownList (already in JSON format)
-        const player1Select = document.getElementById("update_player_1_login_name");
-        const player2Select = document.getElementById("update_player_2_login_name");
-
-        // Clear existing options
-        player1Select.innerHTML = "";
-        player2Select.innerHTML = "";
-
-        // Populate dropdowns with new options from dropDownList
-        dropDownList.forEach(player => {
-            const option1 = document.createElement("option");
-            option1.value = player.original;
-            option1.text = player.formatted;
-
-            const option2 = document.createElement("option");
-            option2.value = player.original;
-            option2.text = player.formatted;
-
-            player1Select.appendChild(option1);
-            player2Select.appendChild(option2);
-        });
-
-        document.getElementById("editPopup").style.display = "block";
-    }
-
-    function closeEditPopup() {
-        document.getElementById("editPopup").style.display = "none";
-    }
-</script>
--->
-
-{% endblock %}
+</body>
+</html>

@@ -40,7 +40,7 @@ def login():
             if user.player_role == 'admin':
                 from gameday import GameDay, serialize_gameday_obj
                 gameday_obj = GameDay()
-                serialize_gameday_obj(session = session, gameday_obj = gameday_obj)
+                serialize_gameday_obj(session, gameday_obj)
 
                 from gameday import display_gameday_matches
                 print('Gameday matches at admin login:')
@@ -165,34 +165,24 @@ def create_match_by_system():
     player_2_login_name = request.form.get('player_2_login_name')
     admin_name = session.get('user_name')
     match_to_update = Match(player_1_login_name, player_2_login_name)
+    
 
     from gameday import deserialize_gameday_obj,serialize_gameday_obj
     restored_gameday_obj = deserialize_gameday_obj(session=session)
-    restored_gameday_obj. update_match(match_to_update,match_status = 'played',match_html_display_status = False)
-    if restored_gameday_obj.counter_active_matches()== 4:
-        from gameday import display_gameday_matches
-        print('Gameday matches at counter_active_matches = 4:')
-        print(100*'=')
-        display_gameday_matches(restored_gameday_obj.get_gameday_matches())
-
-
+    counter_active_matches = restored_gameday_obj.counter_active_matches()
+    if counter_active_matches == 0:
         flash('No more matches planned for today. \
-                    Please create a match manually via Edit button', 'info')   
+                    Please create a match manually via Edit button', 'info') 
+        serialize_gameday_obj(session, restored_gameday_obj)
         return render_template('admin.html',user_name = admin_name,
                                     four_matches_list = restored_gameday_obj.create_four_matches(),
                                      check_availability_matches = False)
     
     else:
+        restored_gameday_obj. update_match(match_to_update,match_status = 'played',match_html_display_status = False)
         any_active_match = restored_gameday_obj.find_specified_match(match_status = 'active', match_html_display_status = False)
         restored_gameday_obj.update_match(match_to_update=any_active_match, \
                                         match_html_display_status=True)
-        
-        from gameday import display_gameday_matches
-        print('Gameday matches created by system:')
-        print(100*'=')
-        display_gameday_matches(restored_gameday_obj.get_gameday_matches())
-
-
         serialize_gameday_obj(session,restored_gameday_obj)
         return redirect(url_for('admin'))
 
@@ -228,7 +218,7 @@ def users():
                 db.session.commit()
                 new_payment = Payment(fk_booking_id = new_booking.booking_id, payment_status = 'unpaid')
                 db.session.add(new_payment)
-                db.session.commit()                
+                db.session.commit()
                 stripe_session = create_stripe_session(new_booking.booking_id)
                 new_payment.stripe_session_id = stripe_session.id
                 db.session.commit()

@@ -105,13 +105,11 @@ def format_dates_for_display(dates_list):
    return [
         {
             'original': date,
-            'formatted': datetime.strptime(date, '%Y-%m-%d').strftime('%d-%b-%Y, %A')
+            'formatted': datetime.datetime.strptime(date, '%Y-%m-%d').strftime('%d-%b-%Y, %A')
         } 
         for date in dates_list]
 
 
-# with app.app_context():
-#     Payment.__table__.create(db.engine)
 
 
 
