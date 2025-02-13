@@ -82,15 +82,11 @@ def signup():
 
         db.session.add(new_user)
         db.session.commit()
-        return redirect(url_for('signup_success'))
+        flash("You've successfully joined our family of amazing table tennis players! Please login below",'success')
+        return redirect(url_for('login'))
         
         
     return render_template('signup.html')
-
-
-@app.route('/signup_success')
-def signup_success():
-    return render_template('signup_success.html')
 
 
 @app.route('/admin')

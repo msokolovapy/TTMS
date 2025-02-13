@@ -30,7 +30,6 @@
             <input type="hidden" name="player_2_original_login_name" value="{{ match.player_2_login_name }}">
             <button type="submit"name="edit_button" value="manually_edit_players" class="edit-button">Edit</button>
         </form>
-        <div class="animation-space">[Animation Placeholder]</div>
         {% if match.status != 'played' %}
             <button class="action-button" onclick="openResultPopup('{{ match.player_1_login_name }}', '{{ match.player_2_login_name }}')">Enter results</button>
         {% endif %}
