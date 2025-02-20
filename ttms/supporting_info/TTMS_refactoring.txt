@@ -1,7 +1,6 @@
 #login_route.py
-from flask import request
 
-def obtain_player_info_from_login_page():
+def obtain_player_info_from_login_page(request):
         player_email = request.form['player_email']
         password = request.form['password']
         return player_email, password
@@ -14,7 +13,7 @@ def check_failed(user_password, user):
      if not(user and bcrypt.check_password_hash(user.player_password, password)):
          return True
 
-def store_data_in_flask_session(user = None, gameday_data = None):
+def update_session(user = None, gameday_data = None):
      if user:
           session['user_id'] = user.player_id
           session['user_role'] = user.player_role
@@ -27,39 +26,44 @@ def store_data_in_flask_session(user = None, gameday_data = None):
 def initiate_matches():
     return GameDay()
 
-def user_role_check_passed_for(u_role):
-    role = session.get('user_role')
-    if role == u_role:
-        return True
+def initiate_matches_and_update_session():
+    gameday_data = initiate_matches()
+    return update_session(gameday_data = gameday_data)
 
 def display_message_on_page(message_str, message_type):
     flash(message_str,message_type)
 
-def initiate_matches_and_store_data():
-    gameday_data = initiate_matches()
-    store_data_in_flask_session(gameday_data = gameday_data)
-    return
+def return_web_page(user):
+    user_role =  user.get_role()
+    try:
+        return redirect(url_for(user_role))
+    except:
+        
 
-def redirect_to_route(route):
-    return redirect url_for(route)
+def redirect_to_page(route):
+    return redirect(url_for(route))
 
-def obtain_and_store_user_data():
+def get_user(request):
     user_email, user_password = obtain_player_info_from_login_page()
     user = find_user_in_database_by(user_email)
-    if check_failed(user_password,user):
-        display_message_on_page('Invalid user credentials. 
-                                  Try again!', message_type = 'danger')
-    else:
-        return store_data_in_flask_session(user = user)
+    
 
 
 
 
 
 def login_and_store_data():
-     obtain_and_store_user_data()
-     if user_role_check_passed_for('admin'):
-         initiate_matches_and_store_data()
+     user = get_user(request)
+     if user.is_valid(user_password):
+        update_session(user = user)
+        if user.is_admin():
+            initiate_matches_and_update_session()
+        return_web_page(user)
+            
+
+
+obtain_and_store_user_data()
+
          redirect_to_route('admin')
      elif user_role_check_passed_for('user'):
          redirect_to_route('user')
