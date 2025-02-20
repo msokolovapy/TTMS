@@ -4,10 +4,10 @@ import random
 import sys
 import json
 from sqlalchemy import cast, Float
-from extensions import db
-from models_booking import Booking
-from models_user import User, GameDayPlayer
-from models_match import Match
+from ttms import db
+from ttms.models_booking import Booking
+from ttms.models_user import User, GameDayPlayer
+from ttms.models_match import Match
 from datetime import datetime
 
 
@@ -47,7 +47,6 @@ class GameDay():
 
         combined_query = game_day_players_data_query_1.union_all(game_day_players_data_query_2)
         gameday_players_data = combined_query.all()
-        
         return gameday_players_data
 
     def create_gameday_players_lst(self):
@@ -231,6 +230,23 @@ class GameDay():
         counter = sum(1 for match in self.gameday_matches if match.status == 'active' and not match.html_display_status)
         return counter
     
+    def display_gameday_players_data(self):
+        print("{:<20} {:<10} {:<10}".format(
+                            "Player Name", 
+                            "Player Role", 
+                            "Player Rank", 
+                        ))
+        print(50*'=')
+        if not self.gameday_players_data:
+            print('No player data found')
+        for player_data in self.gameday_players_data:
+            player_login_name, player_role, player_rank = player_data
+            print("{:<20} {:<10} {:<10}".format(
+                            player_login_name, 
+                            player_role, 
+                            player_rank, 
+                        ))
+    
 
     def to_dict(self):
         return {
@@ -291,10 +307,11 @@ def create_drop_down_list(sorted_serialised_players_list):
 
 def display_gameday_matches(matches_list):
     for index,match in enumerate(matches_list):
-        print("{:<10} {:<20} {:<20} {:<10} {:<10}".format(f'Match {index + 1}',match.player_1_login_name, \
-                                                                                match.player_2_login_name,
-                                                                                match.status,\
-                                                                                match.html_display_status))
+        print("{:<10} {:<20} {:<20} {:<10} {:<10}".format(
+            f'Match {index + 1}',match.player_1_login_name, 
+                                match.player_2_login_name,
+                                match.status,
+                                match.html_display_status))
 
 
 

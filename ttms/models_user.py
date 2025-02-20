@@ -1,5 +1,4 @@
-from extensions import db
-from datetime import datetime
+from ttms import db
 
 
 class User(db.Model):

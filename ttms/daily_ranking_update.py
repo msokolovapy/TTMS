@@ -2,15 +2,13 @@
 
 """IMPORTANT: schedule daily running of this module to ensure timely player ranking update"""
 
-from app import app
+from ttms import app,db
 from datetime import datetime
-from extensions import db
-from models_match import Match,retrieve_match_data
-from models_user import User
-from sqlalchemy import func
+from ttms.models_match import retrieve_match_data
+from ttms.models_user import User
 import logging
 
-logging.basicConfig(filename='daily_ranking_update.log', level=logging.INFO, 
+logging.basicConfig(filename='daily_ranking_update_log.log', level=logging.INFO, 
                     format='%(asctime)s %(levelname)s:%(message)s')
 
 

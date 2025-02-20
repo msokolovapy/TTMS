@@ -1,8 +1,7 @@
 #models_match.py
 
-from extensions import db
-from elo_rating import Elo
-from models_user import User
+from ttms import db
+from ttms.models_user import User
 from sqlalchemy import func
 import logging
 import ast
