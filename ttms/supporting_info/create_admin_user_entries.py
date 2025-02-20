@@ -1,6 +1,6 @@
 import sys
 import os
-from app import app, db
+from run import app, db
 from models import User,Match,Booking
 from datetime import datetime, timedelta
 from flask_bcrypt import Bcrypt

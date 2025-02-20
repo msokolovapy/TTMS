@@ -1,4 +1,4 @@
-from app import app, db
+from run import app, db
 from models_booking import Booking
 from datetime import datetime, timedelta
 import random
