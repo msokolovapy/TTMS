@@ -1,4 +1,5 @@
-from ttms import db
+from flask import flash
+from ttms import db,bcrypt
 
 
 class User(db.Model):
@@ -32,9 +33,24 @@ class GameDayPlayer(User):
 
     def get_rank(self):
         return self.player_rank
+    
+    def get_role(self):
+        return self.player_role
 
     def get_player_login_name(self):
         return self.player_login_name
+    
+    def is_admin(self):
+        return self.player_role == 'admin'
+    
+    def is_user(self):
+        return self.player_role == 'user'
+    
+    def is_valid(self,password):
+        if self and bcrypt.check_password_hash(self.player_password, password):
+            return True
+        else:
+            flash('Invalid credentials, please try again.', 'danger')
     
     def to_dict(self):
         return {
