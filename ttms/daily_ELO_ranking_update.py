@@ -32,9 +32,7 @@ def daily_ranking_update(match_obj_list):
     else:
         logging.info("No match objects to update.")
 
-
-
-if __name__ == '__main__':
+def main():
     with app.app_context():
         try:
             today_date = datetime.now().strftime('%Y-%m-%d')
@@ -46,6 +44,12 @@ if __name__ == '__main__':
                 logging.info(f"No matches found for {today_date}")
         except Exception as e:
             logging.error(f"Error occurred during player ranking update: {e}")
+
+
+
+if __name__ == '__main__':
+    main()
+
 
 
     
