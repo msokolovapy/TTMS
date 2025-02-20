@@ -1,4 +1,4 @@
-from flask import redirect, url_for
+from flask import url_for
 import stripe
 
 def create_stripe_session(booking_id):

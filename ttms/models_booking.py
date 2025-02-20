@@ -1,9 +1,6 @@
 from ttms import db
 import datetime
 from sqlalchemy import func, select,and_
-# from app import app
-
-
 
 
 class Booking(db.Model):
