@@ -4,9 +4,10 @@ from flask import render_template, redirect, url_for, request, flash, session
 
 from ttms import app,db,bcrypt
 from ttms.models_user import User
+from ttms.login import login_and_store_data,build_web_page,redirect_to_web_page
 from ttms.models_match import Match, get_match_results
 from ttms.models_booking import Booking, Payment,find_available_bookings, refund_eligibility_check,retrieve_all_bookings_for_user,format_dates_for_display
-from ttms.gameday import GameDay, serialize_gameday_obj,deserialize_gameday_obj, create_drop_down_list
+from ttms.gameday import serialize_gameday_obj,deserialize_gameday_obj, create_drop_down_list
 from ttms.models_booking import Payment
 from ttms.stripe_checkout import create_stripe_session, restore_stripe_session, obtain_stripe_refund
 
@@ -15,30 +16,13 @@ from ttms.stripe_checkout import create_stripe_session, restore_stripe_session, 
 def index():
     return render_template('index.html')
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET','POST'])
 def login():
     if request.method == 'POST':
-        player_email = request.form['player_email']
-        password = request.form['password']
-        user = User.query.filter_by(player_email_address = player_email).first()
-
-        if user and bcrypt.check_password_hash(user.player_password, password):
-            session['user_id'] = user.player_id
-            session['user_role'] = user.player_role
-            session['user_name'] = user.player_login_name
-            session['player_rank'] = user.player_rank
-            flash('Login successful!', 'success')
-
-            if user.player_role == 'admin':
-                gameday_obj = GameDay()
-                serialize_gameday_obj(session, gameday_obj)
-                return redirect(url_for('admin'))
-            else:
-                return redirect(url_for('users'))
-
-        flash('Invalid credentials, please try again.', 'danger')
-
-    return render_template('login.html')
+        return login_and_store_data()
+    return build_web_page('login')
+    
+    
 
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -80,9 +64,6 @@ def admin():
         return redirect(url_for('login'))
     admin_name = session.get('user_name')
     restored_gameday_obj = deserialize_gameday_obj(session=session)
-
-    print('Gameday players data when admin()')
-    restored_gameday_obj.display_gameday_players_data()
 
     return render_template('admin.html',user_name = admin_name, four_matches_list = restored_gameday_obj.create_four_matches())
 
@@ -222,7 +203,7 @@ def users():
             db.session.delete(payment_to_delete)
             db.session.delete(booking_to_delete)
             db.session.commit()
-            flash(f"Booking on {selected_date_to_delete} deleted successfully.",'success')
+            flash(f"Booking on {selected_date_to_delete} cancelled successfully.",'success')
             return redirect(url_for('users'))
 
     return render_template('user.html', 

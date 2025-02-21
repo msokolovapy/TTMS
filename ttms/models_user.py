@@ -19,6 +19,24 @@ class User(db.Model):
         self.player_role = player_role
         self.player_rank = player_rank
 
+    def is_admin(self):
+        return self.player_role == 'admin'
+    
+    def is_user(self):
+        return self.player_role == 'user'
+    
+    def is_valid(self,password):
+        if self and bcrypt.check_password_hash(self.player_password, password):
+            return True
+        else:
+            flash('Invalid credentials, please try again.', 'danger')
+    
+    def is_present_in_database(self,user_info):
+        player_email = user_info['user_email']
+        if find_user_in_database_by(player_email):
+            return True
+        return False
+
 class GameDayPlayer(User):
     def __init__(self,player_data):
         player_login_name,player_role,player_rank = player_data 
@@ -40,17 +58,6 @@ class GameDayPlayer(User):
     def get_player_login_name(self):
         return self.player_login_name
     
-    def is_admin(self):
-        return self.player_role == 'admin'
-    
-    def is_user(self):
-        return self.player_role == 'user'
-    
-    def is_valid(self,password):
-        if self and bcrypt.check_password_hash(self.player_password, password):
-            return True
-        else:
-            flash('Invalid credentials, please try again.', 'danger')
     
     def to_dict(self):
         return {
@@ -73,7 +80,8 @@ class GameDayPlayer(User):
     
         return player
 
-
+def find_user_in_database_by(player_email):
+    return User.query.filter_by(player_email_address = player_email).first()
 
 if __name__ == '__main__':
     pass

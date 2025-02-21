@@ -1,77 +1,62 @@
-#login_route.py
-
-def obtain_player_info_from_login_page(request):
-        player_email = request.form['player_email']
-        password = request.form['password']
-        return player_email, password
-
-def find_user_in_database(player_email_address):
-    return User.query.filter_by(player_email_address = player_email).first()
+#sign_up.py
+from ttms.login import display_message_on_page
+from ttms.models_user import find_user_in_database_by
 
 
-def check_failed(user_password, user):
-     if not(user and bcrypt.check_password_hash(user.player_password, password)):
-         return True
 
-def update_session(user = None, gameday_data = None):
-     if user:
-          session['user_id'] = user.player_id
-          session['user_role'] = user.player_role
-          session['user_name'] = user.player_login_name
-          session['player_rank'] = user.player_rank
-     elif gameday_data:
-        session['gameday_object'] = gameday_data.to_dict()  
-      return
+def update_database_for(object):
+    add_to_database_session(object)
+    write_to_database(object)
 
-def initiate_matches():
-    return GameDay()
+def add_to_database_session(object):
+    return db.add(object)
 
-def initiate_matches_and_update_session():
-    gameday_data = initiate_matches()
-    return update_session(gameday_data = gameday_data)
+def write_to_database():
+    return db.commit()
 
-def display_message_on_page(message_str, message_type):
-    flash(message_str,message_type)
+    
+def create_user(user_info):
+    user = User(player_login_name=user_info[user_name],
+            player_email_address=user_info[user_email],
+            player_phone_number=user_info[user_phone_number],
+            player_password=bcrypt.generate_password_hash(user_info[password]).decode('utf-8'),
+            player_role='user',
+            player_rank=1500
+        )
+     return user
 
-def return_web_page(user):
-    user_role =  user.get_role()
-    try:
-        return redirect(url_for(user_role))
-    except:
+
+
+
+
+def obtain_player_info_from_signup_page(request):
+        signup_data = {'user_name':request.form['nickname'],
+                     'user_email':request.form['email'], 
+                     'user_phone_number':request.form['phone',
+                     'user_password':request.form['password']]
+        return signup_data
+
+
+def signup_user():
+    signup_data = obtain_player_info_from_signup_page(request)
+    if user.is_present_in_database(signup_data):  
+       display_message_on_page('User details already in database. Please login instead.', 'danger')
+       return redirect_to_web_page('login')
+    new_user = create_user(user_info)
+    update_database_for(new_user)
+    display_message_on_page("You've successfully joined our family of amazing table tennis players! Please login below",'success')
+    return redirect_to_web_page('login')
+
+
+
+
+
+
+
+
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
         
-
-def redirect_to_page(route):
-    return redirect(url_for(route))
-
-def get_user(request):
-    user_email, user_password = obtain_player_info_from_login_page()
-    user = find_user_in_database_by(user_email)
-    
-
-
-
-
-
-def login_and_store_data():
-     user = get_user(request)
-     if user.is_valid(user_password):
-        update_session(user = user)
-        if user.is_admin():
-            initiate_matches_and_update_session()
-        return_web_page(user)
-            
-
-
-obtain_and_store_user_data()
-
-         redirect_to_route('admin')
-     elif user_role_check_passed_for('user'):
-         redirect_to_route('user')
-     else:
-         print('New user role found in database')
-
-
-
-     
-         
-    
+     return build_web_page('signup')
