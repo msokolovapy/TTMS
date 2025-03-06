@@ -2,10 +2,12 @@ from datetime import datetime
 import stripe
 from flask import render_template, redirect, url_for, request, flash, session
 
-from ttms import app,db,bcrypt
-from ttms.models_user import User
+from ttms import app,db
 from ttms.login import login_and_store_data,build_web_page,redirect_to_web_page
-from ttms.models_match import Match, get_match_results
+from ttms.sign_up import signup_user
+from ttms.build_admin_page import login_checks_pass, obtain_info_from_
+from ttms.match_results import obtain_match_results_and_update_session
+from ttms.models_match import Match
 from ttms.models_booking import Booking, Payment,find_available_bookings, refund_eligibility_check,retrieve_all_bookings_for_user,format_dates_for_display
 from ttms.gameday import serialize_gameday_obj,deserialize_gameday_obj, create_drop_down_list
 from ttms.models_booking import Payment
@@ -21,79 +23,30 @@ def login():
     if request.method == 'POST':
         return login_and_store_data()
     return build_web_page('login')
-    
-    
 
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        user_name = request.form['nickname']
-        user_email = request.form['email']
-        user_phone_number = request.form['phone']
-        password = request.form['password']
-
-        user = User.query.filter_by(player_email_address=user_email).first()
-        new_user_rank = 1500
-
-        if user:
-            flash('User details already in database. Please login instead.', 'danger')
-            return redirect(url_for('login'))
-        
-        new_user = User(
-            player_login_name=user_name,
-            player_email_address=user_email,
-            player_phone_number=user_phone_number,
-            player_password=bcrypt.generate_password_hash(password).decode('utf-8'),
-            player_role='user',
-            player_rank=new_user_rank
-        )
-
-        db.session.add(new_user)
-        db.session.commit()
-        flash("You've successfully joined our family of amazing table tennis players! Please login below",'success')
-        return redirect(url_for('login'))
-        
-        
-    return render_template('signup.html')
+        return signup_user()
+    return build_web_page('signup')
 
 
 @app.route('/admin')
 def admin():
-    if 'user_id' not in session or session.get('user_role') != 'admin':
-        return redirect(url_for('login'))
-    admin_name = session.get('user_name')
-    restored_gameday_obj = deserialize_gameday_obj(session=session)
-
-    return render_template('admin.html',user_name = admin_name, four_matches_list = restored_gameday_obj.create_four_matches())
-
+    if login_checks_pass():
+          admin_name,matches = obtain_info_from_(session)
+          return build_web_page('admin', admin_name, matches.to_display())
+    return redirect_to_web_page('login')
 
 @app.route('/admin/submit_match_results', methods=['GET', 'POST'])
 def submit_match_results():
-    player1 = request.form.get('player1_login_name')
-    player2 = request.form.get('player2_login_name')
-    last_played = match_start_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    match_result = get_match_results()
+    return obtain_match_results_and_update_session()
 
-    played_match = Match(
-        match_start_date_time = match_start_date,
-        player_1_login_name=player1,
-        player_2_login_name=player2,
-        match_result=match_result
-    )
-    db.session.add(played_match)
-    db.session.commit()
-
-    gameday_obj = deserialize_gameday_obj(session= session)
-    gameday_obj.update_match(match_to_update=played_match, match_status = 'played')
-    gameday_obj.update_gameday_player(player_1_login_name = player1, player_2_login_name = player2, status='reserve', last_played=last_played)
-    serialize_gameday_obj(session = session, gameday_obj=gameday_obj)
-
-    return redirect(url_for('admin'))
 
 @app.route('/admin/create_match_manually',methods = ['GET','POST'])
 def create_match_manually():
-    restored_gameday_obj = deserialize_gameday_obj(session=session)
+    restored_gameday_obj = deserialize_gameday_obj()
     clicked_button = request.form.get('edit_button')
     
     if clicked_button == 'manually_edit_players':
@@ -111,7 +64,7 @@ def create_match_manually():
 
         match_to_update = Match(player_1_original_login_name,player_2_original_login_name)
         restored_gameday_obj.update_match(match_to_update,player_1_updated_login_name, player_2_updated_login_name, 'active')
-        serialize_gameday_obj(session = session, gameday_obj=restored_gameday_obj)
+        serialize_gameday_obj(restored_gameday_obj)
 
         return redirect(url_for('admin'))
                     
@@ -127,14 +80,14 @@ def create_match_by_system():
     admin_name = session.get('user_name')
     match_to_update = Match(player_1_login_name, player_2_login_name)
     
-    restored_gameday_obj = deserialize_gameday_obj(session=session)
+    restored_gameday_obj = deserialize_gameday_obj()
     counter_active_matches = restored_gameday_obj.counter_active_matches()
     if counter_active_matches == 0:
         flash('No more matches planned for today. \
                     Please create a match manually via Edit button', 'info') 
-        serialize_gameday_obj(session, restored_gameday_obj)
+        serialize_gameday_obj(restored_gameday_obj)
         return render_template('admin.html',user_name = admin_name,
-                                    four_matches_list = restored_gameday_obj.create_four_matches(),
+                                    four_matches_list = restored_gameday_obj.to_display(),
                                      check_availability_matches = False)
     
     else:
@@ -142,7 +95,7 @@ def create_match_by_system():
         any_active_match = restored_gameday_obj.find_specified_match(match_status = 'active', match_html_display_status = False)
         restored_gameday_obj.update_match(match_to_update=any_active_match, \
                                         match_html_display_status=True)
-        serialize_gameday_obj(session,restored_gameday_obj)
+        serialize_gameday_obj(restored_gameday_obj)
         return redirect(url_for('admin'))
 
 

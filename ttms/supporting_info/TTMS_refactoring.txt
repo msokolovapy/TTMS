@@ -1,62 +1,36 @@
-#sign_up.py
-from ttms.login import display_message_on_page
-from ttms.models_user import find_user_in_database_by
 
+#------------------------------------------------------------------------------------
 
+   
 
-def update_database_for(object):
-    add_to_database_session(object)
-    write_to_database(object)
+-----------------------------------------------------------------------------------------------
 
-def add_to_database_session(object):
-    return db.add(object)
-
-def write_to_database():
-    return db.commit()
-
+@app.route('/admin/create_match_manually',methods = ['GET','POST'])
+def create_match_manually():
+    restored_gameday_obj = deserialize_gameday_obj()
+    clicked_button = request.form.get('edit_button')
     
-def create_user(user_info):
-    user = User(player_login_name=user_info[user_name],
-            player_email_address=user_info[user_email],
-            player_phone_number=user_info[user_phone_number],
-            player_password=bcrypt.generate_password_hash(user_info[password]).decode('utf-8'),
-            player_role='user',
-            player_rank=1500
-        )
-     return user
+    if clicked_button == 'manually_edit_players':
+        sorted_serialized_players_list = restored_gameday_obj.sort_gameday_players()
+        drop_down_list = create_drop_down_list(sorted_serialized_players_list)
 
+        return render_template('admin_create_match_manually.html', \
+                            drop_down_list = drop_down_list)
 
+    elif clicked_button == 'submit_updated_players':
+        player_1_original_login_name = request.form.get('player_1_original_login_name')
+        player_2_original_login_name = request.form.get('player_2_original_login_name')
+        player_1_updated_login_name = request.form.get('player_1_updated_login_name')
+        player_2_updated_login_name = request.form.get('player_2_updated_login_name')
 
+        match_to_update = Match(player_1_original_login_name,player_2_original_login_name)
+        restored_gameday_obj.update_match(match_to_update,player_1_updated_login_name, player_2_updated_login_name, 'active')
+        serialize_gameday_obj(restored_gameday_obj)
 
-
-def obtain_player_info_from_signup_page(request):
-        signup_data = {'user_name':request.form['nickname'],
-                     'user_email':request.form['email'], 
-                     'user_phone_number':request.form['phone',
-                     'user_password':request.form['password']]
-        return signup_data
-
-
-def signup_user():
-    signup_data = obtain_player_info_from_signup_page(request)
-    if user.is_present_in_database(signup_data):  
-       display_message_on_page('User details already in database. Please login instead.', 'danger')
-       return redirect_to_web_page('login')
-    new_user = create_user(user_info)
-    update_database_for(new_user)
-    display_message_on_page("You've successfully joined our family of amazing table tennis players! Please login below",'success')
-    return redirect_to_web_page('login')
+        return redirect(url_for('admin'))
 
 
 
 
 
 
-
-
-
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
-    if request.method == 'POST':
-        
-     return build_web_page('signup')

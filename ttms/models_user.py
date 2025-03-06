@@ -31,9 +31,8 @@ class User(db.Model):
         else:
             flash('Invalid credentials, please try again.', 'danger')
     
-    def is_present_in_database(self,user_info):
-        player_email = user_info['user_email']
-        if find_user_in_database_by(player_email):
+    def is_present_in_database(self):
+        if find_user_in_database_by(self.player_email_address):
             return True
         return False
 

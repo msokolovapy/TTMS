@@ -3,6 +3,7 @@ import logging
 import random
 import sys
 import json
+from flask import session
 from sqlalchemy import cast, Float
 from ttms import db
 from ttms.models_booking import Booking
@@ -213,7 +214,7 @@ class GameDay():
 
         return None
 
-    def create_four_matches(self):
+    def to_display(self):
         """Creates a list of four match objects where match.status == 'active' and match.html_display_status = True
           to load into the html template"""
         four_matches_list = [match_obj for match_obj in self.gameday_matches if match_obj.html_display_status]
@@ -268,12 +269,12 @@ class GameDay():
         return obj
     
 
-def deserialize_gameday_obj(session):
+def deserialize_gameday_obj():
     gameday_data = session.get('gameday_object')
     gameday = GameDay.from_dict(gameday_data)
     return gameday
     
-def serialize_gameday_obj(session, gameday_obj):
+def serialize_gameday_obj(gameday_obj):
     session['gameday_object'] = gameday_obj.to_dict()
 
 
