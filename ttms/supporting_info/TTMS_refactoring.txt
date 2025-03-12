@@ -1,18 +1,22 @@
+#create_match_manually.py
 
-#------------------------------------------------------------------------------------
 
-   
 
------------------------------------------------------------------------------------------------
+def display_players():
+    sorted_serialized_players_list = restored_gameday_obj.sort_gameday_players()
+    drop_down_list = create_drop_down_list(sorted_serialized_players_list)
+    
+
+
+
+
 
 @app.route('/admin/create_match_manually',methods = ['GET','POST'])
 def create_match_manually():
-    restored_gameday_obj = deserialize_gameday_obj()
-    clicked_button = request.form.get('edit_button')
     
+
     if clicked_button == 'manually_edit_players':
-        sorted_serialized_players_list = restored_gameday_obj.sort_gameday_players()
-        drop_down_list = create_drop_down_list(sorted_serialized_players_list)
+        
 
         return render_template('admin_create_match_manually.html', \
                             drop_down_list = drop_down_list)
@@ -28,6 +32,32 @@ def create_match_manually():
         serialize_gameday_obj(restored_gameday_obj)
 
         return redirect(url_for('admin'))
+
+def user_made_player_selection_via(clicked_button):
+    if clicked_button == 'submit_updated_players':
+        return True
+
+def user_decides_to_select_players_via(clicked_button):
+    if clicked_button == 'manually_edit_players':
+        return True
+
+def obtain_info_from_session():
+    players = deserialize_gameday_obj()
+    clicked_button = request.form.get('edit_button')
+    return players,clicked_button
+
+
+@app.route('/admin/create_match_manually',methods = ['GET','POST'])
+def create_match_manually():
+    players,clicked_button = obtain_info_from_session()
+    if user_decides_to_select_players_via(clicked_button):
+        return build_web_page('choose_your_player_from',players.displayed_as_drop_down())
+    if user_made_player_selection_via(clicked_button):
+        old_match = restore_match_info_using(old_players_names)
+        old_match.is_updated_with(new_player_names)
+        old_match.status_updated_to('active')
+        update_session_for(players)
+        return redirect_to_web_page('admin')
 
 
 

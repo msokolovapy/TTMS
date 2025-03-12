@@ -12,7 +12,7 @@ from ttms.models_match import Match
 def update_session(played_match, player_data, time_last_played):
     player_1_login_name, player_2_login_name = player_data
     matches = deserialize_gameday_obj()
-    matches.update_match(played_match, 'played')
+    matches.update_match(played_match, match_status = 'played')
     matches.update_gameday_player(player_1_login_name, 
                                   player_2_login_name, 
                                   'reserve', 
