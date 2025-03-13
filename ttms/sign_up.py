@@ -1,9 +1,8 @@
 #sign_up.py
-from flask import request, render_template
+from flask import request
 from ttms import db,bcrypt
 from ttms.login import display_message_on_page,redirect_to_web_page
-from ttms.models_user import find_user_in_database_by,User
-
+from ttms.models_user import User
 
 
 def update_database_for(object):
@@ -16,7 +15,7 @@ def add_to_database_session(object):
 def write_to_database():
     return db.session.commit()
 
-    
+
 def create_user(user_info):
     user = User(player_login_name=user_info['user_name'],
             player_email_address=user_info['user_email'],
@@ -26,12 +25,6 @@ def create_user(user_info):
             player_rank=1500
         )
     return user
-
-def build_web_page(html_template, **kwargs):
-    html_template += '.html'
-    return render_template(html_template, **kwargs)
-
-
 
 def obtain_player_info_from_signup_page():
         signup_data = {'user_name':request.form['nickname'],

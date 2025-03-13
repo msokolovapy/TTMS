@@ -1,29 +1,52 @@
 
 print(f'Match summary after loading "/admin" page:')
-                print(100 *'=')
-                for index, match in enumerate(gameday_obj.get_gameday_matches()):
-                    print("{:<20} {:<20} {:<20} {:<20} {:<20}".format(
-                        f"Match {index + 1}",
-                        match.player_1_login_name, 
-                        match.player_2_login_name, 
-                        match.status, 
-                        match.html_display_status
-                    ))
+print(100 *'=')
+for index, match in enumerate(gameday_obj.get_gameday_matches()):
+    print("{:<20} {:<20} {:<20} {:<20} {:<20}".format(
+        f"Match {index + 1}",
+        match.player_1_login_name, 
+        match.player_2_login_name, 
+        match.status, 
+        match.html_display_status
+    ))
 
 
 
 print('Next Game button clicked')
-    print(f'Matches created by system for {player_1_login_name} and {player_2_login_name}:')
-    print(100 * '=')
+print(f'Matches created by system for {player_1_login_name} and {player_2_login_name}:')
+print(100 * '=')
 
 
-               print(f'Match summary after loading "/admin" page:')
-                print(100 *'=')
-                for index, match in enumerate(gameday_obj.get_gameday_matches()):
-                    print("{:<20} {:<20} {:<20} {:<20} {:<20}".format(
-                        f"Match {index + 1}",
-                        match.player_1_login_name, 
-                        match.player_2_login_name, 
-                        match.status, 
-                        match.html_display_status
-                    ))
+print(f'Match summary after loading "/admin" page:')
+print(100 *'=')
+for index, match in enumerate(gameday_obj.get_gameday_matches()):
+    print("{:<20} {:<20} {:<20} {:<20} {:<20}".format(
+        f"Match {index + 1}",
+        match.player_1_login_name, 
+        match.player_2_login_name, 
+        match.status, 
+        match.html_display_status
+    ))
+
+
+ def get_deep_size(obj, seen=None):
+    """ Recursively calculates the total memory size of an object and its contents. """
+    if seen is None:
+        seen = set()
+    
+    obj_id = id(obj)
+    if obj_id in seen:
+        return 0  # Avoid counting the same object twice
+    
+    seen.add(obj_id)
+    
+    size = sys.getsizeof(obj)  # Get the size of the object itself
+    
+    if isinstance(obj, dict):
+        # Add size of keys and values
+        size += sum(get_deep_size(k, seen) + get_deep_size(v, seen) for k, v in obj.items())
+    elif isinstance(obj, (list, tuple, set)):
+        # Add size of each item
+        size += sum(get_deep_size(i, seen) for i in obj)
+    
+    return size                   

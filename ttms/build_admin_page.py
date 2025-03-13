@@ -1,6 +1,6 @@
 #build_admin_page.py
 from flask import session
-from ttms.gameday import deserialize_gameday_obj
+from ttms.gameday import deserialize_
 
 def user_is(role):
    if session.get('user_role') == role:
@@ -19,6 +19,6 @@ def login_checks_pass():
 
 def obtain_info_from_(session):
    name = session.get('user_name')
-   matches = deserialize_gameday_obj()
+   matches = deserialize_('matches')
    return name, matches
 

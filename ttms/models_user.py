@@ -48,14 +48,14 @@ class GameDayPlayer(User):
         if isinstance(other, GameDayPlayer):
             return (self.player_login_name == other.player_login_name)
 
-    def get_rank(self):
-        return self.player_rank
+    # def get_rank(self):
+    #     return self.player_rank
     
-    def get_role(self):
-        return self.player_role
+    # def get_role(self):
+    #     return self.player_role
 
-    def get_player_login_name(self):
-        return self.player_login_name
+    # def get_player_login_name(self):
+    #     return self.player_login_name
     
     
     def to_dict(self):
@@ -82,6 +82,4 @@ class GameDayPlayer(User):
 def find_user_in_database_by(player_email):
     return User.query.filter_by(player_email_address = player_email).first()
 
-if __name__ == '__main__':
-    pass
     

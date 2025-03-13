@@ -1,6 +1,6 @@
 #login.py
 from flask import render_template, redirect,flash,url_for,session, request
-from ttms.gameday import GameDay
+from ttms.gameday import Matches, Players
 from ttms.models_user import User
 from ttms.models_user import find_user_in_database_by
 
@@ -22,12 +22,14 @@ def redirect_to_web_page(html_file_name):
 def display_message_on_page(message_str, message_type):
     flash(message_str,message_type)
 
-def initiate_matches():
-    return GameDay()
+
 
 def initiate_matches_and_update_session():
-    gameday_data = initiate_matches()
-    return update_session_for(gameday_data)
+    players = Players()
+    matches = Matches(players)
+    update_session_for(players)
+    update_session_for(matches)
+
 
   
 def update_session_for(data):
@@ -36,8 +38,10 @@ def update_session_for(data):
         session['user_role'] = data.player_role
         session['user_name'] = data.player_login_name
         session['player_rank'] = data.player_rank
-    elif isinstance(data, GameDay):
-        session['gameday_object'] = data.to_dict()
+    elif isinstance(data, Matches):
+        session['matches'] = data.to_dict()
+    elif isinstance(data, Players):
+        session['players'] = data.to_dict()
       
 
 

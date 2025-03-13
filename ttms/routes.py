@@ -9,7 +9,7 @@ from ttms.build_admin_page import login_checks_pass, obtain_info_from_
 from ttms.match_results import obtain_match_results_and_update_session
 from ttms.models_match import Match
 from ttms.models_booking import Booking, Payment,find_available_bookings, refund_eligibility_check,retrieve_all_bookings_for_user,format_dates_for_display
-from ttms.gameday import serialize_gameday_obj,deserialize_gameday_obj, create_drop_down_list
+from ttms.gameday import serialize_,deserialize_, create_drop_down_list
 from ttms.models_booking import Payment
 from ttms.stripe_checkout import create_stripe_session, restore_stripe_session, obtain_stripe_refund
 
@@ -46,11 +46,11 @@ def submit_match_results():
 
 @app.route('/admin/create_match_manually',methods = ['GET','POST'])
 def create_match_manually():
-    restored_gameday_obj = deserialize_gameday_obj()
+    matches = deserialize_('matches')
     clicked_button = request.form.get('edit_button')
     
     if clicked_button == 'manually_edit_players':
-        sorted_serialized_players_list = restored_gameday_obj.sort_gameday_players()
+        sorted_serialized_players_list = matches.sort_gameday_players()
         drop_down_list = create_drop_down_list(sorted_serialized_players_list)
 
         return render_template('admin_create_match_manually.html', \
@@ -63,8 +63,8 @@ def create_match_manually():
         player_2_updated_login_name = request.form.get('player_2_updated_login_name')
 
         match_to_update = Match(player_1_original_login_name,player_2_original_login_name)
-        restored_gameday_obj.update_match(match_to_update,player_1_updated_login_name, player_2_updated_login_name, 'active')
-        serialize_gameday_obj(restored_gameday_obj)
+        matches.update_match(match_to_update,player_1_updated_login_name, player_2_updated_login_name, 'active')
+        serialize_(matches)
 
         return redirect(url_for('admin'))
                     
@@ -80,22 +80,22 @@ def create_match_by_system():
     admin_name = session.get('user_name')
     match_to_update = Match(player_1_login_name, player_2_login_name)
     
-    restored_gameday_obj = deserialize_gameday_obj()
-    counter_active_matches = restored_gameday_obj.counter_active_matches()
+    matches = deserialize_('matches')
+    counter_active_matches = matches.counter_active_matches()
     if counter_active_matches == 0:
         flash('No more matches planned for today. \
                     Please create a match manually via Edit button', 'info') 
-        serialize_gameday_obj(restored_gameday_obj)
+        serialize_(matches)
         return render_template('admin.html',user_name = admin_name,
-                                    four_matches_list = restored_gameday_obj.to_display(),
+                                    four_matches_list = matches.to_display(),
                                      check_availability_matches = False)
     
     else:
-        restored_gameday_obj. update_match(match_to_update,match_status = 'played',match_html_display_status = False)
-        any_active_match = restored_gameday_obj.find_specified_match(match_status = 'active', match_html_display_status = False)
-        restored_gameday_obj.update_match(match_to_update=any_active_match, \
+        matches. update_match(match_to_update,match_status = 'played',match_html_display_status = False)
+        any_active_match = matches.find_specified_match(match_status = 'active', match_html_display_status = False)
+        matches.update_match(match_to_update=any_active_match, \
                                         match_html_display_status=True)
-        serialize_gameday_obj(restored_gameday_obj)
+        serialize_(matches)
         return redirect(url_for('admin'))
 
 

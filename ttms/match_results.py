@@ -3,7 +3,7 @@ from flask import request
 from ttms.models_match import get_match_results
 from ttms.login import update_session_for,redirect_to_web_page
 from ttms.sign_up import update_database_for
-from ttms.gameday import deserialize_gameday_obj
+from ttms.gameday import deserialize_
 from ttms.models_match import Match
 
 
@@ -11,13 +11,15 @@ from ttms.models_match import Match
 
 def update_session(played_match, player_data, time_last_played):
     player_1_login_name, player_2_login_name = player_data
-    matches = deserialize_gameday_obj()
+    matches = deserialize_('matches')
+    players = deserialize_('players')
     matches.update_match(played_match, match_status = 'played')
-    matches.update_gameday_player(player_1_login_name, 
+    players.update_gameday_player(player_1_login_name, 
                                   player_2_login_name, 
                                   'reserve', 
                                   time_last_played)
     update_session_for(matches)
+    update_session_for(players)
 
 
 def create_match_using_(match_data):
