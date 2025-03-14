@@ -5,8 +5,8 @@ from flask import render_template, redirect, url_for, request, flash, session
 from ttms import app,db
 from ttms.login import login_and_store_data,build_web_page,redirect_to_web_page
 from ttms.sign_up import signup_user
-from ttms.build_admin_page import login_checks_pass, obtain_info_from_
-from ttms.match_results import obtain_match_results_and_update_session
+from ttms.admin import login_checks_pass, obtain_info_from_
+from ttms.submit_match_results import obtain_match_results_and_update_session
 from ttms.models_match import Match
 from ttms.models_booking import Booking, Payment,find_available_bookings, refund_eligibility_check,retrieve_all_bookings_for_user,format_dates_for_display
 from ttms.gameday import serialize_,deserialize_, create_drop_down_list

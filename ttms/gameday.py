@@ -77,7 +77,6 @@ class Players():
             # logging.error('One or both gameday players not found')
         return tuple(lst)
 
-
    
     def update_gameday_player(self, player_1_login_name, player_2_login_name, status=None, last_played=None):
         players_found = self.find_gameday_players(player_1_login_name, player_2_login_name)
@@ -95,7 +94,6 @@ class Players():
         else:
             pass
 
-
     def sort_gameday_players(self):
         serialised_players_list = [player.to_dict() for player in self.get_gameday_players()]
         for player_dict in serialised_players_list:
@@ -104,7 +102,6 @@ class Players():
         sorted_serialised_players_list = sorted(serialised_players_list, key = lambda x: x['last_played'] if x['last_played'] else datetime(1,1,1))
         
         return sorted_serialised_players_list
-
 
 
     def update_gameday_players_list(self, gameday_players_lst):
@@ -127,6 +124,20 @@ class Players():
         # obj.gameday_players_data = json.loads(data['gameday_players_data'])
         obj.gameday_players = gameday_players
         return obj
+
+    def display_as_drop_down(self):
+        sorted_serialised_players_list = self.sort_gameday_players()
+        simple_player_data_list = [{'original' : player_dict['player_login_name'],
+                                    'formatted' : f'{player_dict['player_login_name']} ({player_dict['player_rank']})'} 
+                                    for player_dict in sorted_serialised_players_list]
+        return tuple(simple_player_data_list)
+
+
+def get_player_based_on_role(players_data,role):
+    for player in players_data:
+        if player.player_role == role:
+            return player
+
 
 
 class Matches():
@@ -240,11 +251,6 @@ def create_gameday_match_lst(players):
             match_lst.append(match)
         return match_lst
 
-def get_player_based_on_role(players_data,role):
-    for player in players_data:
-        if player.player_role == role:
-            return player
-
         
 def match_players(players):
     """ Matches players based on the closest rank number"
@@ -267,11 +273,7 @@ def match_players(players):
         matched_players.append((closest_match[0], player_login_name))
     return matched_players   
 
-def create_drop_down_list(sorted_serialised_players_list):
-    simple_player_data_list = [{'original' : player_dict['player_login_name'],
-                                'formatted' : f'{player_dict['player_login_name']} ({player_dict['player_rank']})'} 
-                                for player_dict in sorted_serialised_players_list]
-    return tuple(simple_player_data_list)
+
 
 
 def deserialize_(data):

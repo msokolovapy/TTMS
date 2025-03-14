@@ -2,57 +2,73 @@
 
 
 
-def display_players():
-    sorted_serialized_players_list = restored_gameday_obj.sort_gameday_players()
-    drop_down_list = create_drop_down_list(sorted_serialized_players_list)
-    
+
+def obtain_user_input_for(function_name):
+    if function_name = 'create_match_manually':   
+        clicked_button = request.form.get('edit_button')
+        if clicked_button == 'manually_edit_players':
+             pass
+        elif clicked_button == 'submit_updated_players:
+            player_1_original_login_name = request.form.get('player_1_original_login_name')
+            player_2_original_login_name = request.form.get('player_2_original_login_name')
+            player_1_updated_login_name = request.form.get('player_1_updated_login_name')
+            player_2_updated_login_name = request.form.get('player_2_updated_login_name')
+            old_names = player_1_original_login_name, player_2_original_login_name
+            updated_names = player_1_updated_login_name, player_2_updated_login_name
+            return old_names, updated_names
+    elif function_name == 'submit_match_results'):
+        pass
+    elif function_name == 'login':
+        player_email = request.form['player_email']
+        password = request.form['password']
+        return player_email, password
+    elif function_name == 'signup':
+        signup_data = {'user_name':request.form['nickname'],
+                       'user_email':request.form['email'],
+                        'user_phone_number':request.form['phone'],
+                        'user_password':request.form['password']}
+        return signup_data
+    elif function_name = 'submit_match_results':
+         match_data = {
+                  'match_start_date_time' : datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                  'player_1_login_name' : request.form.get('player1_login_name'),
+                  'player_2_login_name' : request.form.get('player2_login_name'),
+                  'match_result' : get_match_results(),
+                  }
+         player_data = match_data['player_1_login_name'], match_data['player_2_login_name']
+         time_last_played = match_data['match_start_date_time']
+         return match_data, player_data, time_last_played
+
+def obtain_info_from_session_for(function_name):
+    if function_name == 'admin':
+        name = session.get('user_name')
+        matches = deserialize_('matches')
+        return name, matches 
+    elif function_name = 'create_match_manually':   
+        players = deserialize_('players')
+        return players
+          
 
 
 
-
-
-@app.route('/admin/create_match_manually',methods = ['GET','POST'])
-def create_match_manually():
-    
-
-    if clicked_button == 'manually_edit_players':
-        
-
-        return render_template('admin_create_match_manually.html', \
-                            drop_down_list = drop_down_list)
-
-    elif clicked_button == 'submit_updated_players':
-        player_1_original_login_name = request.form.get('player_1_original_login_name')
-        player_2_original_login_name = request.form.get('player_2_original_login_name')
-        player_1_updated_login_name = request.form.get('player_1_updated_login_name')
-        player_2_updated_login_name = request.form.get('player_2_updated_login_name')
-
-        match_to_update = Match(player_1_original_login_name,player_2_original_login_name)
-        restored_gameday_obj.update_match(match_to_update,player_1_updated_login_name, player_2_updated_login_name, 'active')
-        serialize_gameday_obj(restored_gameday_obj)
-
-        return redirect(url_for('admin'))
-
-def user_made_player_selection_via(clicked_button):
+def submit_players_via(clicked_button):
     if clicked_button == 'submit_updated_players':
         return True
 
-def user_decides_to_select_players_via(clicked_button):
+def select_players_via(clicked_button):
     if clicked_button == 'manually_edit_players':
         return True
 
-def obtain_info_from_session():
-    players = deserialize_gameday_obj()
-    clicked_button = request.form.get('edit_button')
-    return players,clicked_button
+
 
 
 @app.route('/admin/create_match_manually',methods = ['GET','POST'])
 def create_match_manually():
-    players,clicked_button = obtain_info_from_session()
-    if user_decides_to_select_players_via(clicked_button):
-        return build_web_page('choose_your_player_from',players.displayed_as_drop_down())
-    if user_made_player_selection_via(clicked_button):
+    players = obtain_info_from_session_for('create_match_manually')
+    clicked_button = obtain_user_input_for('create_match_manually')
+    if select_players_via(clicked_button):
+        return build_web_page('choose_your_player_from',players.display_as_drop_down())
+    if submit_players_via(clicked_button):
         old_match = restore_match_info_using(old_players_names)
         old_match.is_updated_with(new_player_names)
         old_match.status_updated_to('active')
