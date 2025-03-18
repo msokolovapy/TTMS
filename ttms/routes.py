@@ -9,7 +9,8 @@ from ttms.admin import login_checks_pass, obtain_info_from_
 from ttms.submit_match_results import obtain_match_results_and_update_session
 from ttms.models_match import Match
 from ttms.models_booking import Booking, Payment,find_available_bookings, refund_eligibility_check,retrieve_all_bookings_for_user,format_dates_for_display
-from ttms.gameday import serialize_,deserialize_, create_drop_down_list
+from ttms.gameday import serialize_,deserialize_
+from ttms.create_match_manually import choose_players_and_create_match_manually
 from ttms.models_booking import Payment
 from ttms.stripe_checkout import create_stripe_session, restore_stripe_session, obtain_stripe_refund
 
@@ -43,31 +44,10 @@ def admin():
 def submit_match_results():
     return obtain_match_results_and_update_session()
 
-
 @app.route('/admin/create_match_manually',methods = ['GET','POST'])
 def create_match_manually():
-    matches = deserialize_('matches')
-    clicked_button = request.form.get('edit_button')
-    
-    if clicked_button == 'manually_edit_players':
-        sorted_serialized_players_list = matches.sort_gameday_players()
-        drop_down_list = create_drop_down_list(sorted_serialized_players_list)
+    return choose_players_and_create_match_manually()
 
-        return render_template('admin_create_match_manually.html', \
-                            drop_down_list = drop_down_list)
-
-    elif clicked_button == 'submit_updated_players':
-        player_1_original_login_name = request.form.get('player_1_original_login_name')
-        player_2_original_login_name = request.form.get('player_2_original_login_name')
-        player_1_updated_login_name = request.form.get('player_1_updated_login_name')
-        player_2_updated_login_name = request.form.get('player_2_updated_login_name')
-
-        match_to_update = Match(player_1_original_login_name,player_2_original_login_name)
-        matches.update_match(match_to_update,player_1_updated_login_name, player_2_updated_login_name, 'active')
-        serialize_(matches)
-
-        return redirect(url_for('admin'))
-                    
 
 @app.route('/admin/create_match_by_system', methods = ['GET','POST'])
 def create_match_by_system():
