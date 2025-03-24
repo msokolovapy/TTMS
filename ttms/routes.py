@@ -5,7 +5,7 @@ from flask import render_template, redirect, url_for, request, flash, session
 from ttms import app,db
 from ttms.login import login_and_store_data,build_web_page,redirect_to_web_page
 from ttms.sign_up import signup_user
-from ttms.admin import login_checks_pass, obtain_info_from_
+from ttms.admin import login_checks_pass, obtain_info_from_, convert_to_boolean
 from ttms.submit_match_results import obtain_match_results_and_update_session
 from ttms.models_match import Match
 from ttms.models_booking import Booking, Payment,find_available_bookings, refund_eligibility_check,retrieve_all_bookings_for_user,format_dates_for_display
@@ -33,11 +33,12 @@ def signup():
     return build_web_page('signup')
 
 
-@app.route('/admin')
-def admin():
+@app.route('/admin/<check_availability_matches>')
+def admin(check_availability_matches):
+    check_availability_matches = convert_to_boolean(check_availability_matches)    
     if login_checks_pass():
           admin_name,matches = obtain_info_from_(session)
-          return build_web_page('admin', admin_name, matches.to_display())
+          return build_web_page('admin', admin_name, matches.to_display(), check_availability_matches)
     return redirect_to_web_page('login')
 
 @app.route('/admin/submit_match_results', methods=['GET', 'POST'])
@@ -66,9 +67,10 @@ def create_match_by_system():
         flash('No more matches planned for today. \
                     Please create a match manually via Edit button', 'info') 
         serialize_(matches)
-        return render_template('admin.html',user_name = admin_name,
-                                    four_matches_list = matches.to_display(),
-                                     check_availability_matches = False)
+        # return render_template('admin.html',user_name = admin_name,
+        #                             four_matches_list = matches.to_display(),
+        #                              check_availability_matches = False)
+        return redirect(url_for('admin', check_availability_matches = False))
     
     else:
         matches. update_match(match_to_update,match_status = 'played',match_html_display_status = False)

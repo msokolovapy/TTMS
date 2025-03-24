@@ -59,7 +59,7 @@ def choose_players_and_create_match_manually():
         old_match = Match(old_name_1, old_name_2)
         matches.update_match(old_match, selected_name_1, selected_name_2, match_status = 'active')
         update_session_for(matches)
-        return redirect_to_web_page('admin')
+        return redirect_to_web_page('admin', check_availability_matches=True)
     return build_web_page('admin_create_match_manually', drop_down_list = players.display_as_drop_down())
 
 

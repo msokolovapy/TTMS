@@ -48,6 +48,6 @@ def obtain_match_results_and_update_session():
     played_match = create_match_using_(match_data)
     update_session(played_match, player_data, time_last_played)
     update_database_for(played_match)
-    return redirect_to_web_page('admin')
+    return redirect_to_web_page('admin', check_availability_matches=True)
 
 

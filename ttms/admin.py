@@ -2,6 +2,11 @@
 from flask import session
 from ttms.gameday import deserialize_
 
+def convert_to_boolean(string):
+   if string == 'True':
+      return True
+   return False
+
 def user_is(role):
    if session.get('user_role') == role:
        return True

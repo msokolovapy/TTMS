@@ -1,93 +1,55 @@
-#create_match_manually.py
+#create_match_by_system.py
 
-
-
-@app.route('/admin/create_match_manually',methods = ['GET','POST'])
-def create_match_manually():
-    matches = deserialize_('matches')
-    players = deserialize_('players')
-    clicked_button = request.form.get('edit_button')
+@app.route('/admin/create_match_by_system', methods = ['GET','POST'])
+def create_match_by_system():
+    """This function receives player login names from an html form, creates match object, 
+    updates match object status to 'played' and randomly selects any 'active' match from 
+    gameday object's gameday_matches list to be displayed on html form 
+    """
+    player_1_login_name = request.form.get('player_1_login_name')
+    player_2_login_name = request.form.get('player_2_login_name')
+    admin_name = session.get('user_name')
+    match_to_update = Match(player_1_login_name, player_2_login_name)
     
-    if clicked_button == 'manually_edit_players':
-        return render_template('admin_create_match_manually.html', \
-                            players.display_as_drop_down())
-
-    elif clicked_button == 'submit_updated_players':
-        player_1_original_login_name = request.form.get('player_1_original_login_name')
-        player_2_original_login_name = request.form.get('player_2_original_login_name')
-        player_1_updated_login_name = request.form.get('player_1_updated_login_name')
-        player_2_updated_login_name = request.form.get('player_2_updated_login_name')
-
-        match_to_update = Match(player_1_original_login_name,player_2_original_login_name)
-        matches.update_match(match_to_update,player_1_updated_login_name, player_2_updated_login_name, 'active')
+    matches = deserialize_('matches')
+    counter_active_matches = matches.counter_active_matches()
+    if counter_active_matches == 0:
+        flash('No more matches planned for today. \
+                    Please create a match manually via Edit button', 'info') 
         serialize_(matches)
-
-        return redirect(url_for('admin'))
-
-
-
-def obtain_user_input_for(function_name):
-    if function_name = 'create_match_manually':   
-        clicked_button = request.form.get('edit_button')
-        if clicked_button == 'manually_edit_players':
-            return None
-        elif clicked_button == 'submit_updated_players:
-            player_1_original_login_name = request.form.get('player_1_original_login_name')
-            player_2_original_login_name = request.form.get('player_2_original_login_name')
-            selected_login_name_1 = request.form.get('player_1_updated_login_name')
-            selected_login_name_2 = request.form.get('player_2_updated_login_name')
-            return player_1_original_login_name, player_2_original_login_name,selected_login_name_1, selected_login_name_2 
-    elif function_name == 'submit_match_results'):
-        pass
-    elif function_name == 'login':
-        player_email = request.form['player_email']
-        password = request.form['password']
-        return player_email, password
-    elif function_name == 'signup':
-        signup_data = {'user_name':request.form['nickname'],
-                       'user_email':request.form['email'],
-                        'user_phone_number':request.form['phone'],
-                        'user_password':request.form['password']}
-        return signup_data
-    elif function_name = 'submit_match_results':
-         match_data = {
-                  'match_start_date_time' : datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                  'player_1_login_name' : request.form.get('player1_login_name'),
-                  'player_2_login_name' : request.form.get('player2_login_name'),
-                  'match_result' : get_match_results(),
-                  }
-         player_data = match_data['player_1_login_name'], match_data['player_2_login_name']
-         time_last_played = match_data['match_start_date_time']
-         return match_data, player_data, time_last_played
-
-def obtain_info_from_session_for(function_name):
-    if function_name == 'admin':
-        name = session.get('user_name')
-        matches = deserialize_('matches')
-        return name, matches 
-    elif function_name == 'create_match_manually':   
-        players = deserialize_('players')
-        matches = deserilaise_('matches')
-        return players, matches
-          
+        return render_template('admin.html',user_name = admin_name,
+                                    four_matches_list = matches.to_display(),
+                                     check_availability_matches = False)
+    
+    else:
+        
+return redirect(url_for('admin'), check_availability_matches = False)
 
 
-
-
-@app.route('/admin/create_match_manually',methods = ['GET','POST'])
-def create_match_manually():
-    players, matches = obtain_info_from_session_for('create_match_manually')
-    names = obtain_user_input_for('create_match_manually')
-    if names:
-        old_name_1, old_name_2, selected_name_1, selected_name_2 = names
-        old_match = Match(old_name_1, old_name_2)
-        matches.update_match(old_match, selected_name_1, selected_name_2, match_status = 'active')
-        update_session_for(matches)
-        return redirect_to_web_page('admin')
-    return build_web_page('admin_selects_players', drop_down_list = players.displayed_as_drop_down())
+@app.route('/admin'<ckeck_availability_matches>)
+def admin(check_availability_matches):
+    if login_checks_pass():
+          admin_name,matches = obtain_info_from_(session)
+          return build_web_page('admin', admin_name, matches.to_display(), check_availability_matches)
+    return redirect_to_web_page('login')
 
 
 
 
 
 
+def system_chooses_next_match():
+    player_1_name, player_2_name, admin_name = obtain_user_input('create_match_by_system')
+    matches = obtain_info_from_session('create_match_by_system')
+    if no_more_prebooked_matches():
+        display_flash_message_for('create_match_by_system')
+        return build_web_page('admin',admin_name, matches.to_display(), check_availability_matches = False)
+    else:
+         match_to_update = Match(player_1_name, player_2_name)
+         matches. update_match(match_to_update,match_status = 'played',match_html_display_status = False)
+         any_active_match = matches.find_specified_match(match_status = 'active', match_html_display_status = False)
+         matches.update_match(match_to_update=any_active_match, \
+                                        match_html_display_status=True)
+         serialize_(matches)
+         return redirect(url_for('admin'))
+    

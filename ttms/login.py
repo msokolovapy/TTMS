@@ -4,19 +4,20 @@ from ttms.gameday import Matches, Players
 from ttms.models_user import User
 from ttms.models_user import find_user_in_database_by
 
-def build_web_page(html_file_name,user_name = None,four_matches_list = None,drop_down_list = None):
+def build_web_page(html_file_name,user_name = None,four_matches_list = None,check_availability_matches = None,drop_down_list = None):
     html_file_name += '.html'
     try:
         return render_template(html_file_name, user_name=user_name, 
-                               four_matches_list=four_matches_list, 
-                               drop_down_list = drop_down_list)
-    except Exception:
+                                four_matches_list=four_matches_list, 
+                                check_availability_matches = check_availability_matches,
+                                drop_down_list = drop_down_list)
+    except Exception as e:
         return render_template('error.html') 
 
 
-def redirect_to_web_page(html_file_name):
+def redirect_to_web_page(html_file_name,check_availability_matches = None):
     try:
-        return redirect(url_for(html_file_name))
+        return redirect(url_for(html_file_name, check_availability_matches = check_availability_matches))
     except Exception:
         return render_template('error.html')
 
@@ -60,6 +61,6 @@ def login_and_store_data():
         update_session_for(user)
         if user.is_admin():
             initiate_matches_and_update_session()
-            return redirect_to_web_page('admin')
+            return redirect_to_web_page('admin', check_availability_matches = False)
         if user.is_user():
             return redirect_to_web_page('users')
