@@ -60,7 +60,6 @@ def update_session_for(data):
 
 def obtain_info_from_webpage():
     function_name = request.endpoint
-    print(function_name)
     if function_name == 'create_match_manually':   
         clicked_button = request.form.get('edit_button')
         if clicked_button == 'manually_edit_players':
@@ -82,7 +81,6 @@ def obtain_info_from_webpage():
                         'user_password':request.form['password']}
         return signup_data
     elif function_name == 'submit_match_results':
-         print(f'print function_name again:{function_name}')
          match_data = {
                   'match_start_date_time' : datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                   'player_1_login_name' : request.form.get('player1_login_name'),
@@ -91,7 +89,6 @@ def obtain_info_from_webpage():
                   }
          player_data = match_data['player_1_login_name'], match_data['player_2_login_name']
          time_last_played = match_data['match_start_date_time']
-         print(match_data, player_data, time_last_played, sep = '\n')
          return match_data, player_data, time_last_played
     elif function_name == 'create_match_by_system':
         player_1_login_name = request.form.get('player_1_login_name')
@@ -105,11 +102,7 @@ def obtain_info_from_session():
         name = session.get('user_name')
         matches = deserialize_('matches')
         return name, matches 
-    elif function_name == 'submit_match_results':
+    elif function_name in ('submit_match_results','create_match_manually'):
         matches = deserialize_('matches')
         players = deserialize_('players')
         return matches, players
-    elif function_name == 'create_match_manually':   
-        players = deserialize_('players')
-        matches = deserialize_('matches')
-        return players, matches

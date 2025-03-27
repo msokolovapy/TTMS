@@ -8,6 +8,7 @@ from ttms.login import login_and_store_data
 from ttms.sign_up import signup_user
 from ttms.admin import login_check_and_redirect
 from ttms.submit_match_results import obtain_match_results_and_update_session
+from ttms.create_match_by_system import system_chooses_next_match
 from ttms.models_match import Match,serialize_,deserialize_
 from ttms.models_booking import Booking, Payment,find_available_bookings, refund_eligibility_check,retrieve_all_bookings_for_user,format_dates_for_display
 from ttms.create_match_manually import choose_players_and_create_match_manually
@@ -47,34 +48,7 @@ def create_match_manually():
 
 @app.route('/admin/create_match_by_system', methods = ['GET','POST'])
 def create_match_by_system():
-    """This function receives player login names from an html form, creates match object, 
-    updates match object status to 'played' and randomly selects any 'active' match from 
-    gameday object's gameday_matches list to be displayed on html form 
-    """
-    player_1_login_name = request.form.get('player_1_login_name')
-    player_2_login_name = request.form.get('player_2_login_name')
-    admin_name = session.get('user_name')
-    match_to_update = Match(player_1_login_name, player_2_login_name)
-    
-    matches = deserialize_('matches')
-    counter_active_matches = matches.counter_active_matches()
-    if counter_active_matches == 0:
-        flash('No more matches planned for today. \
-                    Please create a match manually via Edit button', 'info') 
-        serialize_(matches)
-        # return render_template('admin.html',user_name = admin_name,
-        #                             four_matches_list = matches.to_display(),
-        #                              check_availability_matches = False)
-        return redirect(url_for('admin', check_availability_matches = False))
-    
-    else:
-        matches. update_match(match_to_update,match_status = 'played',match_html_display_status = False)
-        any_active_match = matches.find_specified_match(match_status = 'active', match_html_display_status = False)
-        matches.update_match(match_to_update=any_active_match, \
-                                        match_html_display_status=True)
-        serialize_(matches)
-        return redirect(url_for('admin'))
-
+    return system_chooses_next_match()
 
 @app.route('/logout')
 def logout():

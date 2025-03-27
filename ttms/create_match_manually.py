@@ -7,7 +7,7 @@ from ttms.general_use_functions import obtain_info_from_session, obtain_info_fro
 
           
 def choose_players_and_create_match_manually():
-    players, matches = obtain_info_from_session()
+    matches,players = obtain_info_from_session()
     names = obtain_info_from_webpage()
     if names:
         old_name_1, old_name_2, selected_name_1, selected_name_2 = names
