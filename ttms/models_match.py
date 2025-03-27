@@ -136,3 +136,18 @@ def get_match_results():
     
     return str(tuple(game_results))
 
+def create_match_using_(match_data):
+    new_match = Match(
+        match_start_date_time = match_data['match_start_date_time'],
+        player_1_login_name = match_data['player_1_login_name'],
+        player_2_login_name = match_data['player_2_login_name'],
+        match_result = match_data['match_result']
+                      )
+    return new_match
+
+def no_more_prebooked_(matches):
+    counter_active_matches = matches.counter_active_matches()
+    if counter_active_matches == 0:
+        return True
+    return False
+

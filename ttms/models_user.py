@@ -1,4 +1,4 @@
-from flask import flash
+from flask import flash, session
 from ttms import db,bcrypt
 
 
@@ -82,4 +82,27 @@ class GameDayPlayer(User):
 def find_user_in_database_by(player_email):
     return User.query.filter_by(player_email_address = player_email).first()
 
-    
+def create_user_from(user_info):
+    user = User(player_login_name=user_info['user_name'],
+            player_email_address=user_info['user_email'],
+            player_phone_number=user_info['user_phone_number'],
+            player_password=bcrypt.generate_password_hash(user_info['user_password']).decode('utf-8'),
+            player_role='user',
+            player_rank=1500
+        )
+    return user
+
+def user_is(role):
+   if session.get('user_role') == role:
+       return True
+   return False
+
+def user_is_logged_in():
+   if 'user_id' in session:
+       return True
+   return False
+
+def login_checks_pass():
+   if user_is_logged_in() and user_is('admin'):
+       return True
+   return False  
