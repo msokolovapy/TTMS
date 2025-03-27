@@ -8,11 +8,9 @@ from ttms.login import login_and_store_data
 from ttms.sign_up import signup_user
 from ttms.admin import login_check_and_redirect
 from ttms.submit_match_results import obtain_match_results_and_update_session
-from ttms.models_match import Match
+from ttms.models_match import Match,serialize_,deserialize_
 from ttms.models_booking import Booking, Payment,find_available_bookings, refund_eligibility_check,retrieve_all_bookings_for_user,format_dates_for_display
-from ttms.gameday import serialize_,deserialize_
 from ttms.create_match_manually import choose_players_and_create_match_manually
-from ttms.models_user import login_checks_pass
 from ttms.stripe_checkout import create_stripe_session, restore_stripe_session, obtain_stripe_refund
 
 

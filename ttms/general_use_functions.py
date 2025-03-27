@@ -1,10 +1,11 @@
 #general_use_functions.py
 from datetime import datetime
 from flask import render_template, redirect, url_for, session, flash, request
-from ttms.gameday import Matches, Players, deserialize_
-from ttms.models_user import User
-from ttms.models_match import get_match_results
+
 from ttms import db
+from ttms.models_match import Matches, deserialize_, get_match_results
+from ttms.models_user import Players, User
+
 
 
 def update_database_for(object):

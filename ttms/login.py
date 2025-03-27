@@ -1,6 +1,6 @@
 #login.py
-from ttms.gameday import Matches, Players
-from ttms.models_user import find_user_in_database_by
+from ttms.models_match import Matches
+from ttms.models_user import Players, find_user_in_database_by
 from ttms.general_use_functions import redirect_to_web_page, update_session_for, obtain_info_from_webpage
 
 def initiate_matches_and_update_session():
