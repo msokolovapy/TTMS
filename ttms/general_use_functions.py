@@ -10,13 +10,16 @@ from ttms.models_user import Players, User
 
 def update_database_for(object):
     add_to_database_session(object)
-    write_to_database()
+    commit_changes_to_database()
 
 def add_to_database_session(object):
     return db.session.add(object)
 
-def write_to_database():
+def commit_changes_to_database():
     return db.session.commit()
+
+def delete_from_database(object):
+    return db.session.delete(object)
 
 def convert_to_boolean(string):
    if string == 'True':
@@ -24,13 +27,23 @@ def convert_to_boolean(string):
    return False
 
 
-def build_web_page(html_file_name,user_name = None,four_matches_list = None,check_availability_matches = None,drop_down_list = None):
+def build_web_page(html_file_name,user_name = None,
+                   four_matches_list = None,
+                   check_availability_matches = None,
+                   drop_down_list = None,
+                   all_available_bookings_period_60_days = None,
+                   available_user_booking = None,
+                   player_rank = None ):
     html_file_name += '.html'
     try:
-        return render_template(html_file_name, user_name=user_name, 
+        return render_template(html_file_name,
+                                user_name=user_name, 
                                 four_matches_list=four_matches_list, 
                                 check_availability_matches = check_availability_matches,
-                                drop_down_list = drop_down_list)
+                                drop_down_list = drop_down_list,
+                                all_available_bookings_period_60_days = all_available_bookings_period_60_days,
+                                available_user_booking = available_user_booking,
+                                player_rank = player_rank)
     except Exception as e:
         return render_template('error.html') 
 
@@ -94,6 +107,11 @@ def obtain_info_from_webpage():
         player_1_login_name = request.form.get('player_1_login_name')
         player_2_login_name = request.form.get('player_2_login_name') 
         return player_1_login_name, player_2_login_name      
+    elif function_name =='users_post':
+        user_intent = request.form.get('action')
+        selected_date = request.form.get('date')
+        return selected_date, user_intent
+
 
 
 def obtain_info_from_session():
@@ -106,3 +124,22 @@ def obtain_info_from_session():
         matches = deserialize_('matches')
         players = deserialize_('players')
         return matches, players
+    elif function_name == 'users':
+        user_name = session.get('user_name')
+        player_rank = session.get('player_rank')
+        user_info = user_name, player_rank
+        return user_info
+        
+
+
+def check_(session, date = None):
+    if date:
+        return True
+    elif 'user_id' in session:
+        return True
+    else:
+        return False
+    
+def format_(date):
+    formatted_date = datetime.strptime(date, '%Y-%m-%d').strftime('%d-%b-%Y')
+    return formatted_date

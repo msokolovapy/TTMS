@@ -9,6 +9,7 @@ from ttms.sign_up import signup_user
 from ttms.admin import login_check_and_redirect
 from ttms.submit_match_results import obtain_match_results_and_update_session
 from ttms.create_match_by_system import system_chooses_next_match
+from ttms.users import make_or_delete_booking, obtain_info_and_load_page
 from ttms.models_match import Match,serialize_,deserialize_
 from ttms.models_booking import Booking, Payment,find_available_bookings, refund_eligibility_check,retrieve_all_bookings_for_user,format_dates_for_display
 from ttms.create_match_manually import choose_players_and_create_match_manually
@@ -53,66 +54,74 @@ def create_match_by_system():
 @app.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('login'))
+    return redirect_to_web_page('login')
+
+@app.get('/users')
+def users_get():
+    return obtain_info_and_load_page()
 
 
-@app.route('/users', methods=['GET', 'POST'])
-#to add:
-# Summary of user details including current ranking
-def users():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    user_name = session.get('user_name')
-    player_rank = session.get('player_rank')
-    formatted_all_available_bookings_period_60_days = format_dates_for_display(find_available_bookings(user_name))
-    formatted_available_user_booking = format_dates_for_display(retrieve_all_bookings_for_user(user_name))
+@app.post('/users')
+def users_post():
+     return make_or_delete_booking()
+
+# @app.route('/users', methods=['GET', 'POST'])
+# #to add:
+# # Summary of user details including current ranking
+# def users():
+#     if 'user_id' not in session:
+#         return redirect(url_for('login'))
+#     user_name = session.get('user_name')
+#     player_rank = session.get('player_rank')
+#     formatted_all_available_bookings_period_60_days = format_dates_for_display(find_available_bookings(user_name))
+#     formatted_available_user_booking = format_dates_for_display(retrieve_all_bookings_for_user(user_name))
         
-    if request.method == 'POST':
-        action = request.form.get('action')
-        if action == 'new_booking':
-            selected_available_date = request.form.get('choose_available_booking_date')
-            if selected_available_date:
-                new_booking = Booking(date_time_booking_made = datetime.now().strftime('%Y-%m-%d %H:%M:%S'),player_login_name = user_name, \
-                                      required_booking_date = selected_available_date)
-                db.session.add(new_booking)
-                db.session.commit()
-                new_payment = Payment(fk_booking_id = new_booking.booking_id, payment_status = 'unpaid')
-                db.session.add(new_payment)
-                db.session.commit()
-                stripe_session = create_stripe_session(new_booking.booking_id)
-                new_payment.stripe_session_id = stripe_session.id
-                db.session.commit()
-                flash(f"You are booked for {datetime.strptime(selected_available_date, '%Y-%m-%d').strftime('%d-%b-%Y')}.\
-                     See you there!",'success')
-                return redirect(stripe_session.url, code=303)
-            else:
-                flash('No booking made!','danger')
+#     if request.method == 'POST':
+#         action = request.form.get('action')
+#         if action == 'new_booking':
+#             selected_available_date = request.form.get('choose_available_booking_date')
+#             if selected_available_date:
+#                 new_booking = Booking(date_time_booking_made = datetime.now().strftime('%Y-%m-%d %H:%M:%S'),player_login_name = user_name, \
+#                                       required_booking_date = selected_available_date)
+#                 db.session.add(new_booking)
+#                 db.session.commit()
+#                 new_payment = Payment(fk_booking_id = new_booking.booking_id, payment_status = 'unpaid')
+#                 db.session.add(new_payment)
+#                 db.session.commit()
+#                 stripe_session = create_stripe_session(new_booking.booking_id)
+#                 new_payment.stripe_session_id = stripe_session.id
+#                 db.session.commit()
+#                 flash(f"You are booked for {datetime.strptime(selected_available_date, '%Y-%m-%d').strftime('%d-%b-%Y')}.\
+#                      See you there!",'success')
+#                 return redirect(stripe_session.url, code=303)
+#             else:
+#                 flash('No booking made!','danger')
 
-        elif action == 'delete_booking':
-            selected_date_to_delete = request.form.get('delete_booking_date')
-            booking_to_delete = Booking.query.filter_by(required_booking_date=selected_date_to_delete, player_login_name=user_name).first()
-            payment_to_delete = Payment.query.filter_by(fk_booking_id = booking_to_delete.booking_id).first()
-            if refund_eligibility_check(selected_date_to_delete):
-                stripe_session_id = payment_to_delete.stripe_session_id
-                stripe_session = restore_stripe_session(stripe_session_id)
-                payment_intent_id = stripe_session.payment_intent
-                obtain_stripe_refund(payment_intent_id)
-                flash("Your refund is being processed. \
-                        The funds should appear in your account within 5-6 business days. \
-                        Thank you for your patience.", 'success')
-            else:   
-                flash("Refund not available: Cancellations must be made at least 24 hours prior to the booking date. \
-                        Unfortunately, your cancellation was made too late.", 'danger')   
+#         elif action == 'delete_booking':
+#             selected_date_to_delete = request.form.get('delete_booking_date')
+#             booking_to_delete = Booking.query.filter_by(required_booking_date=selected_date_to_delete, player_login_name=user_name).first()
+#             payment_to_delete = Payment.query.filter_by(fk_booking_id = booking_to_delete.booking_id).first()
+#             if refund_eligibility_check(selected_date_to_delete):
+#                 stripe_session_id = payment_to_delete.stripe_session_id
+#                 stripe_session = restore_stripe_session(stripe_session_id)
+#                 payment_intent_id = stripe_session.payment_intent
+#                 obtain_stripe_refund(payment_intent_id)
+#                 flash("Your refund is being processed. \
+#                         The funds should appear in your account within 5-6 business days. \
+#                         Thank you for your patience.", 'success')
+#             else:   
+#                 flash("Refund not available: Cancellations must be made at least 24 hours prior to the booking date. \
+#                         Unfortunately, your cancellation was made too late.", 'danger')   
             
-            db.session.delete(payment_to_delete)
-            db.session.delete(booking_to_delete)
-            db.session.commit()
-            flash(f"Booking on {selected_date_to_delete} cancelled successfully.",'success')
-            return redirect(url_for('users'))
+#             db.session.delete(payment_to_delete)
+#             db.session.delete(booking_to_delete)
+#             db.session.commit()
+#             flash(f"Booking on {selected_date_to_delete} cancelled successfully.",'success')
+#             return redirect(url_for('users'))
 
-    return render_template('user.html', 
-                       all_available_bookings_period_60_days=formatted_all_available_bookings_period_60_days,
-                       available_user_booking = formatted_available_user_booking, user_name = user_name, player_rank = player_rank)
+#     return render_template('user.html', 
+#                        all_available_bookings_period_60_days=formatted_all_available_bookings_period_60_days,
+#                        available_user_booking = formatted_available_user_booking, user_name = user_name, player_rank = player_rank)
 
 
 @app.route('/user/payment_success')

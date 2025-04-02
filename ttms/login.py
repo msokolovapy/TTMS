@@ -19,4 +19,4 @@ def login_and_store_data():
             initiate_matches_and_update_session()
             return redirect_to_web_page('admin')
         if user.is_user():
-            return redirect_to_web_page('users')
+            return redirect_to_web_page('users_get')

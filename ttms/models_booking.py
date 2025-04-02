@@ -16,6 +16,17 @@ class Booking(db.Model):
         self.date_time_booking_made = date_time_booking_made
         self.player_login_name = player_login_name
         self.required_booking_date = required_booking_date
+        self.associat_payment = Payment(fk_booking_id = self.booking_id, payment_status = 'unpaid')
+
+    def not_eligible_for_refund(self):
+        """This function checks if there is at least 24 hours between the 
+        cancellation time and required booking time
+        """
+        booking_date_time = self.required_booking_date + ' 00:00:00'
+        time_delta = abs(datetime.datetime.strptime(booking_date_time, '%Y-%m-%d %H:%M:%S') - datetime.datetime.now().replace(microsecond=0))
+        if time_delta.total_seconds() < 24 * 60 * 60:
+            return True
+        return False 
 
 class Payment(db.Model):
     payment_id = db.Column(db.Integer, primary_key=True)
@@ -23,6 +34,12 @@ class Payment(db.Model):
     date_time_payment_made = db.Column(db.String)
     payment_status = db.Column(db.String, nullable=False)
     stripe_session_id = db.Column(db.String)
+
+    def update_with(self,online_payment_id):
+        if online_payment_id:
+            setattr(self, 'stripe_session_id', online_payment_id)
+        else:
+                print('No stripe session id received')
 
 
 def find_tuesdays_and_thursdays():
@@ -85,15 +102,15 @@ def retrieve_all_bookings_for_user(user_name):
     return existing_booking_lst
 
 
-def refund_eligibility_check(required_booking_date):
-    """This function checks if there is at least 24 hours between the 
-    cancellation time and required booking time
-    """
-    required_booking_date_time = required_booking_date + ' 00:00:00'
-    time_delta = abs(datetime.datetime.strptime(required_booking_date_time, '%Y-%m-%d %H:%M:%S') - datetime.datetime.now().replace(microsecond=0))
-    if time_delta.total_seconds() >= 24 * 60 * 60:
-        return True
-    return False
+# def refund_eligibility_check(required_booking_date):
+#     """This function checks if there is at least 24 hours between the 
+#     cancellation time and required booking time
+#     """
+#     required_booking_date_time = required_booking_date + ' 00:00:00'
+#     time_delta = abs(datetime.datetime.strptime(required_booking_date_time, '%Y-%m-%d %H:%M:%S') - datetime.datetime.now().replace(microsecond=0))
+#     if time_delta.total_seconds() >= 24 * 60 * 60:
+#         return True
+#     return False
 
 
 def format_dates_for_display(dates_list):
@@ -106,7 +123,24 @@ def format_dates_for_display(dates_list):
         } 
         for date in dates_list]
 
+def create_booking_for(user_data,date):
+    user_name, player_rank = user_data
+    booking = Booking(date_time_booking_made = datetime.now().strftime('%Y-%m-%d %H:%M:%S'),player_login_name = user_name, \
+                                      required_booking_date = date)
+    return booking
 
+# def create_payment_for(new_booking):
+#     new_payment = Payment(fk_booking_id = new_booking.booking_id, payment_status = 'unpaid')
+#     return new_payment
+
+def find_booking_using(user_name, date):
+    found_booking =  Booking.query.filter_by(required_booking_date=date, player_login_name=user_name).first()
+    return found_booking
+
+def find_payment_using(booking):
+    booking_id = booking.booking_id
+    payment = Payment.query.filter_by(fk_booking_id = booking_id).first()
+    return payment
 
 
 

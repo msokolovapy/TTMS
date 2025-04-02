@@ -9,7 +9,7 @@ User Dashboard
     <h2>Your rank is: {{ player_rank }}</h2>
     <form action="/users" method="POST">
         <label for="choose_available_booking_date">Select an available date to book:</label>
-        <select id="choose_available_booking_date" name="choose_available_booking_date">
+        <select id="choose_available_booking_date" name="date">
             {% for date in all_available_bookings_period_60_days %}
                 <option value="{{ date['original'] }}">{{ date['formatted'] }}</option>
             {% endfor %}
@@ -20,7 +20,7 @@ User Dashboard
     <form action="/users" method="POST">
         <!-- Form for deleting an existing booking -->
         <label for="delete_booking_date">Select a booking to cancel:</label>
-        <select id="delete_booking_date" name="delete_booking_date">
+        <select id="delete_booking_date" name="date">
             {% for date in available_user_booking %}
                 <option value="{{ date['original'] }}">{{ date['formatted'] }}</option>
             {% endfor %}
