@@ -10,10 +10,8 @@ from ttms.admin import login_check_and_redirect
 from ttms.submit_match_results import obtain_match_results_and_update_session
 from ttms.create_match_by_system import system_chooses_next_match
 from ttms.users import make_or_delete_booking, obtain_info_and_load_page
-from ttms.models_match import Match,serialize_,deserialize_
-from ttms.models_booking import Booking, Payment,find_available_bookings, refund_eligibility_check,retrieve_all_bookings_for_user,format_dates_for_display
+from ttms.models_booking import Payment
 from ttms.create_match_manually import choose_players_and_create_match_manually
-from ttms.stripe_checkout import create_stripe_session, restore_stripe_session, obtain_stripe_refund
 
 
 @app.route('/')
@@ -38,9 +36,11 @@ def signup():
 def admin(check_availability_matches):    
     return login_check_and_redirect(check_availability_matches)
 
+
 @app.route('/admin/submit_match_results', methods=['GET', 'POST'])
 def submit_match_results():
     return obtain_match_results_and_update_session()
+
 
 @app.route('/admin/create_match_manually',methods = ['GET','POST'])
 def create_match_manually():
@@ -93,7 +93,7 @@ def users_post():
 #                 db.session.commit()
 #                 flash(f"You are booked for {datetime.strptime(selected_available_date, '%Y-%m-%d').strftime('%d-%b-%Y')}.\
 #                      See you there!",'success')
-#                 return redirect(stripe_session.url, code=303)
+                # return redirect(stripe_session.url, code=303)
 #             else:
 #                 flash('No booking made!','danger')
 

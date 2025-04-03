@@ -1,13 +1,13 @@
 # users.py
-from flask import redirect, request, session
-from ttms.models_booking import create_booking_for, create_payment_for,\
+from flask import request, session, redirect
+from ttms.models_booking import create_booking_for,\
                                 find_booking_using, find_available_bookings,\
                                 retrieve_all_bookings_for_user, format_dates_for_display, find_payment_using
 from ttms.general_use_functions import update_database_for,format_,check_,delete_from_database, \
                                        commit_changes_to_database, display_message_on_page,\
                                        redirect_to_web_page, obtain_info_from_session, obtain_info_from_webpage, \
                                        build_web_page
-from ttms.stripe_checkout import create_stripe_session, obtain_refund_for
+from ttms.stripe_checkout import obtain_refund_for, create_stripe_session_using
 
 
 def not_OK_to_proceed():
@@ -18,19 +18,20 @@ def not_OK_to_proceed():
 
 def create_booking_and_store_in_database(user_data, date):
     new_booking = create_booking_for(user_data, date)
-    new_payment = new_booking.associat_payment
     update_database_for(new_booking)
-    update_database_for(new_payment)
+    new_booking_id = new_booking.booking_id
+    new_booking.associat_payment.update_with(booking_id = new_booking_id)
+    update_database_for(new_booking.associat_payment)
     return new_booking
 
 
-def make_payment_and_store_in_database():
-    online_payment = create_stripe_session(new_booking)
-    new_payment.update_with(online_payment.id)
-    commit_changes_to_database()
-    display_message_on_page(f"You are booked for {format_(date)}.\
-                     See you there!",'success') 
-    return redirect(online_payment.url, code=303) 
+# def make_payment_and_store_in_database():
+#     online_payment = create_stripe_session(new_booking)
+#     new_payment.update_with(online_payment.id)
+#     commit_changes_to_database()
+#     display_message_on_page(f"You are booked for {format_(date)}.\
+#                      See you there!",'success') 
+#     return redirect(online_payment.url, code=303) 
 
 def find_booking_and_check_refund_eligibility_for(user_name, date):
     booking = find_booking_using(user_name, date)
@@ -71,15 +72,20 @@ def obtain_info_and_load_page():
 def make_or_delete_booking():
      user_data = obtain_info_from_session() 
      date, user_intent = obtain_info_from_webpage()
-     ok_to_proceed = check_(date)     
+     ok_to_proceed = check_(date = date) 
      if not ok_to_proceed:
          display_message_on_page('No booking made!','danger')
      else:
-         if user_intent == 'make_booking':
-            create_booking_and_store_in_database(user_data, date)
-            make_payment_and_store_in_database()            
-         elif user_intent == 'delete_booking':
-            booking = find_booking_and_check_refund_eligibility_for(name, date) 
+        if user_intent == 'new_booking':
+            booking = create_booking_and_store_in_database(user_data, date)
+            online_payment = create_stripe_session_using(booking)
+            booking.associat_payment.update_with(online_payment_id=online_payment.id)
+            commit_changes_to_database()
+            display_message_on_page(f"You are booked for {format_(date)}.\
+#                                     See you there!",'success')
+            return redirect(online_payment.url, code=303)
+        elif user_intent == 'delete_booking':
+            booking = find_booking_and_check_refund_eligibility_for(user_data, date) 
             payment = find_payment_using(booking) 
             obtain_refund_for(payment)
             delete_(payment,booking)

@@ -124,7 +124,7 @@ def obtain_info_from_session():
         matches = deserialize_('matches')
         players = deserialize_('players')
         return matches, players
-    elif function_name == 'users':
+    elif function_name == 'users_get' or function_name == 'users_post':
         user_name = session.get('user_name')
         player_rank = session.get('player_rank')
         user_info = user_name, player_rank
@@ -132,13 +132,13 @@ def obtain_info_from_session():
         
 
 
-def check_(session, date = None):
+def check_(session=None, date=None):
     if date:
         return True
-    elif 'user_id' in session:
+    if session and 'user_id' in session:
         return True
-    else:
-        return False
+    print(f"Something went wrong when trying to: {check_.__name__}")
+    return False 
     
 def format_(date):
     formatted_date = datetime.strptime(date, '%Y-%m-%d').strftime('%d-%b-%Y')

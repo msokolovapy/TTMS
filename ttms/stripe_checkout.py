@@ -1,7 +1,8 @@
 from flask import url_for
 import stripe
+from ttms.general_use_functions import display_message_on_page
 
-def create_stripe_session(booking):
+def create_stripe_session_using(booking):
     booking_id = booking.booking_id
     stripe.api_key = 'sk_test_51Qmkf8BaZDAfc4fNRXKFyD47bswWxKHpAHD1QDyy7cv3asinDAYCkFt1Tr3kLIx3A9mhjIgz8hPezzHlXTK7sh5V004fxas5eQ'
     BOOKING_PRICE = 1800 #price in cents
