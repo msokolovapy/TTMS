@@ -1,5 +1,3 @@
-
-
 from ttms.models_match import create_match_using_
 from ttms.general_use_functions import obtain_info_from_webpage, obtain_info_from_session,\
                                         update_session_for, update_database_for, redirect_to_web_page

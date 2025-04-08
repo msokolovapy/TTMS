@@ -48,9 +48,9 @@ def build_web_page(html_file_name,user_name = None,
         return render_template('error.html') 
 
 
-def redirect_to_web_page(html_file_name,check_availability_matches = True):
+def redirect_to_web_page(function_name,check_availability_matches = True):
     try:
-        return redirect(url_for(html_file_name, check_availability_matches = check_availability_matches))
+        return redirect(url_for(function_name, check_availability_matches = check_availability_matches))
     except Exception:
         return render_template('error.html')
 
@@ -111,8 +111,10 @@ def obtain_info_from_webpage():
         user_intent = request.form.get('action')
         selected_date = request.form.get('date')
         return selected_date, user_intent
-
-
+    elif function_name == 'success':
+        booking_id = request.args.get('booking_id')
+        return booking_id
+    
 
 def obtain_info_from_session():
     function_name = request.endpoint
@@ -139,7 +141,12 @@ def check_(session=None, date=None):
         return True
     print(f"Something went wrong when trying to: {check_.__name__}")
     return False 
+
     
 def format_(date):
     formatted_date = datetime.strptime(date, '%Y-%m-%d').strftime('%d-%b-%Y')
     return formatted_date
+
+
+def get_current_date_time():
+    return datetime.now().strftime('%Y-%m-%d %H:%M:%S')

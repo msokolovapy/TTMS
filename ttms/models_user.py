@@ -200,7 +200,6 @@ class Players():
     def to_dict(self):
         return {
             'gameday_date': self.gameday_date,
-            # 'gameday_players_data': json.dumps(self.gameday_players_data),
             'gameday_players': [player.to_dict() for player in self.gameday_players]}
 
     @classmethod
@@ -208,7 +207,6 @@ class Players():
         gameday_players = [GameDayPlayer.from_dict(player_data) for player_data in data['gameday_players']]
         obj = cls()
         obj.gameday_date = data['gameday_date']
-        # obj.gameday_players_data = json.loads(data['gameday_players_data'])
         obj.gameday_players = gameday_players
         return obj
 

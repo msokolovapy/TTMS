@@ -1,8 +1,6 @@
 from ttms import db
 import datetime
-import stripe
 from sqlalchemy import func, select,and_
-from flask import url_for
 
 
 class Booking(db.Model):
@@ -31,31 +29,6 @@ class Booking(db.Model):
         return False 
 
 
-    # def make_online_payment(self):
-    #     booking_id = self.booking_id
-    #     stripe.api_key = 'sk_test_51Qmkf8BaZDAfc4fNRXKFyD47bswWxKHpAHD1QDyy7cv3asinDAYCkFt1Tr3kLIx3A9mhjIgz8hPezzHlXTK7sh5V004fxas5eQ'
-    #     BOOKING_PRICE = 1800 #price in cents
-    #     try:
-    #         session = stripe.checkout.Session.create(
-    #             payment_method_types=['card'],
-    #             line_items=[{
-    #                 'price_data': {
-    #                     'currency': 'aud',
-    #                      'product_data': {
-    #                         'name': 'Table Tennis Booking',
-    #                     },
-    #                     'unit_amount': BOOKING_PRICE,
-    #                 },
-    #                 'quantity': 1,
-    #             }],
-    #             mode='payment',
-    #             success_url=url_for('success', booking_id=booking_id, _external=True),
-    #             cancel_url=url_for('cancel', _external=True),
-    #         )
-    #         return self.associat_payment.update_with(session.id)
-    #     except Exception as e:
-    #         return str(e)
-
 class Payment(db.Model):
     payment_id = db.Column(db.Integer, primary_key=True)
     fk_booking_id = db.Column(db.Integer, db.ForeignKey('booking.booking_id'), nullable=False,unique=True)
@@ -63,13 +36,20 @@ class Payment(db.Model):
     payment_status = db.Column(db.String, nullable=False)
     stripe_session_id = db.Column(db.String)
 
-    def update_with(self,booking_id = None, online_payment_id = None):
+    def update_with(self,booking_id = None, online_payment_id = None,
+                         payment_status = None, date = None):
         if online_payment_id:
             setattr(self, 'stripe_session_id', online_payment_id)
-        if booking_id:
+        elif booking_id:
             setattr(self, 'fk_booking_id', booking_id)
+        elif payment_status:
+            setattr(self, 'payment_status', payment_status)
+        elif date:
+            setattr(self, 'date_time_payment_made', date)    
         else:
             print(f"Something went wrong when doing {self.update_with.__name__}")
+    
+
 
 
 def find_tuesdays_and_thursdays():
@@ -132,17 +112,6 @@ def retrieve_all_bookings_for_user(user_name):
     return existing_booking_lst
 
 
-# def refund_eligibility_check(required_booking_date):
-#     """This function checks if there is at least 24 hours between the 
-#     cancellation time and required booking time
-#     """
-#     required_booking_date_time = required_booking_date + ' 00:00:00'
-#     time_delta = abs(datetime.datetime.strptime(required_booking_date_time, '%Y-%m-%d %H:%M:%S') - datetime.datetime.now().replace(microsecond=0))
-#     if time_delta.total_seconds() >= 24 * 60 * 60:
-#         return True
-#     return False
-
-
 def format_dates_for_display(dates_list):
    """This function formats input as 'DD-MMM-YYYY, Day of the Week' to improve readability in drop-down lists
    """
@@ -157,21 +126,19 @@ def create_booking_for(user_data,date):
     user_name, player_rank = user_data
     booking = Booking(date_time_booking_made = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),player_login_name = user_name, \
                                       required_booking_date = date)
-    print(f'new booking.booking_id: {booking.booking_id}')
     return booking
 
-# def create_payment_for(new_booking):
-#     new_payment = Payment(fk_booking_id = new_booking.booking_id, payment_status = 'unpaid')
-#     return new_payment
 
 def find_booking_using(user_name, date):
     found_booking =  Booking.query.filter_by(required_booking_date=date, player_login_name=user_name).first()
     return found_booking
 
-def find_payment_using(booking):
-    booking_id = booking.booking_id
-    payment = Payment.query.filter_by(fk_booking_id = booking_id).first()
-    return payment
+def find_payment_using(booking_data):
+    if isinstance(booking_data, Booking):
+        booking_id = booking_data.booking_id
+        payment = Payment.query.filter_by(fk_booking_id = booking_id).first()
+        return payment
+    return Payment.query.filter_by(fk_booking_id = booking_data).first()
 
 
 

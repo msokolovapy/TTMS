@@ -25,22 +25,15 @@ def create_booking_and_store_in_database(user_data, date):
     return new_booking
 
 
-# def make_payment_and_store_in_database():
-#     online_payment = create_stripe_session(new_booking)
-#     new_payment.update_with(online_payment.id)
-#     commit_changes_to_database()
-#     display_message_on_page(f"You are booked for {format_(date)}.\
-#                      See you there!",'success') 
-#     return redirect(online_payment.url, code=303) 
-
-def find_booking_and_check_refund_eligibility_for(user_name, date):
+def find_booking_and_obtain_refund_for(user_name, date):
     booking = find_booking_using(user_name, date)
-    if booking.not_eligible_for_refund:
-                 display_message_on_page("Refund not available: Cancellations must be made at least 24 hours prior to the booking date. \
+    payment = find_payment_using(booking)
+    if booking.not_eligible_for_refund():
+        display_message_on_page("Refund not available: Cancellations must be made at least 24 hours prior to the booking date. \
                         Unfortunately, your cancellation was made too late.", 'danger')
-                 return booking
     else:
-        return booking
+        obtain_refund_for(payment)
+    return booking, payment
 
 
 def delete_(payment, booking):
@@ -82,14 +75,13 @@ def make_or_delete_booking():
             booking.associat_payment.update_with(online_payment_id=online_payment.id)
             commit_changes_to_database()
             display_message_on_page(f"You are booked for {format_(date)}.\
-#                                     See you there!",'success')
+                                     See you there!",'success')
             return redirect(online_payment.url, code=303)
         elif user_intent == 'delete_booking':
-            booking = find_booking_and_check_refund_eligibility_for(user_data, date) 
-            payment = find_payment_using(booking) 
-            obtain_refund_for(payment)
+            user_name, player_rank = user_data
+            booking, payment = find_booking_and_obtain_refund_for(user_name, date) 
             delete_(payment,booking)
-            return redirect_to_web_page('users')
+            return redirect_to_web_page('users_get')
 
 
   
