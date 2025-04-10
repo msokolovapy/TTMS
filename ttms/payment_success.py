@@ -17,6 +17,6 @@ def check_payment_status_update_database():
          display_message_on_page("Payment successful! Your booking is confirmed.", 'success')
     else:
          display_message_on_page("Booking not paid for. Online payment didn't go through.", 'danger')
-    return redirect_to_web_page('user_get')
+    return redirect_to_web_page('users_get')
         
         

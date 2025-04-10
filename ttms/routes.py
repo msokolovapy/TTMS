@@ -71,5 +71,5 @@ def success():
 @app.route('/user/payment_cancel')
 def cancel():
     display_message_on_page("Payment canceled by Stripe. Please try again.",'danger')
-    return redirect_to_web_page('user_get')
+    return redirect_to_web_page('users_get')
 
