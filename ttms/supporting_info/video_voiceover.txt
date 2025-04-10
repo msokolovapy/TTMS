@@ -1,0 +1,18 @@
+Hello everyone,
+
+This a demo video for my Table Tennis Management system.
+First thing first, this system can be used for any kind of one-to-one sports/competitions where users are ranked using Elo system.
+Here is the index page where user chooses to either sign up or login.
+Lets pretend we are new here and sign up.
+We will need a nickname, email, phone number and password to sign up. The password will be securely hashed for database storage. Press Enter and lets check how our backend sqlite database looks like.
+Here you can see I added new user to the database and the password is hashed.
+Lets login using new user credentials. As you can see we have a straightforward user dashboard that shows user ranking, possible future booking dates (randomly selected to be Tuesdays and Thursdays only) and user bookings that user may choose to cancel.
+Lets make a booking and pay for it using a credit card. I am using Stripe test credit card number here.
+OK, it went through and we can see a friendly message that provides user with information on which date the booking was made on and whether the payment went through. Now lets take a look at our backend sqlite database: both booking and payment tables. As you can see there is a new booking and a new complete payment record for that booking.
+Now lets try to cancel a booking. As you can see, we get a message that the refund is not available for this cancellation as the time difference is less than 24hrs. Lets take a look at the database, both booking and payment are gone. If the time difference is more than 24hrs, Stripe will issue a refund to this user.
+OK, lets logout and login as admin. As you can see we have here a straightforward admin dashboard with four slots for four tennis tables. My system already pulled out information for the bookings made for the next available game day, pre-matched players based on their ELO rankings and created match events between those players. Admin may enter match results, choose players ad-hoc and cycle through the matches created by system (if there are more than 4 matches planned for the day). Lets try all these options. First, lets enter match results for these two players. Lets take a look at the database records. As you can see we have a new match record. Lets go back and try to choose our players ad-hoc.
+It is done and now their match results might be recorded in database. 
+Now lets cycle through the preplanned matches for today. You can see a friendly message when there are no more pre-planned matches, admin will have to choose players ad-hoc (which is useful when players want to play more games).
+A couple of things to remember:
+*you need to schedule daily ranking updates via Windows Task Scheduler for example
+*please don't forget to replace Stripe test API key with the real API key to ensure real-time payments happen seamlessly.
