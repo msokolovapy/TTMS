@@ -6,7 +6,7 @@ from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)  
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/maria/Desktop/New_folder/TTMS/ttms/instance/database.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/Maria/Desktop/python_work/TTMS/ttms/instance/database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
